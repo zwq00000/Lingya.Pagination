@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
+    <PackageId>Lingya.Pagination</PackageId>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../../tools/RedRiver.snk</AssemblyOriginatorKeyFile>
+    <Authors>zwq00000@hotmail.com</Authors>
+    <Company>Tianjin Lingya Tech CO.</Company>
+    <Product>Pagination</Product>
+    <PackageTags>Pagination</PackageTags>
+    <RepositoryUrl>https://dagang.visualstudio.com/DefaultCollection/RHStock.Core/_git/RHStock.Core</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.3" />
+  </ItemGroup>
+
+</Project>
