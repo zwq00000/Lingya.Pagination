@@ -12,6 +12,11 @@
     <PackageTags>Pagination</PackageTags>
     <RepositoryUrl>https://github.com/zwq00000/Lingya.Pagination.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <Version>1.0.2</Version>
+    <PackageProjectUrl>https://github.com/zwq00000/Lingya.Pagination</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageLicenseUrl>http://www.apache.org/licenses/</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
