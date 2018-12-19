@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;netcoreapp2.1</TargetFrameworks>
+    <!--
+    <TargetFrameworks>netcoreapp2.0;netcoreapp2.1;netstandard2.0</TargetFrameworks>
+    -->
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Lingya.Pagination</PackageId>
     <Authors>zwq00000@hotmail.com</Authors>
     <Company>Tianjin Lingya Tech CO.</Company>
@@ -11,8 +14,8 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.3" />
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
   </ItemGroup>
 
 </Project>

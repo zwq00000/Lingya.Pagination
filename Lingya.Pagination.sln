@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lingya.Pagination", "src\Lingya.Pagination\Lingya.Pagination.csproj", "{2D4F0DC6-A44A-47ED-9513-1D0DC543A8A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaginationTests", "test\PaginationTests\PaginationTests.csproj", "{ACD284A0-00E0-44A4-A8CF-61C8442CE966}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2D4F0DC6-A44A-47ED-9513-1D0DC543A8A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D4F0DC6-A44A-47ED-9513-1D0DC543A8A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D4F0DC6-A44A-47ED-9513-1D0DC543A8A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACD284A0-00E0-44A4-A8CF-61C8442CE966}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACD284A0-00E0-44A4-A8CF-61C8442CE966}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACD284A0-00E0-44A4-A8CF-61C8442CE966}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACD284A0-00E0-44A4-A8CF-61C8442CE966}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
