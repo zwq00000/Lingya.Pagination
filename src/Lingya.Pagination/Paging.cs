@@ -5,13 +5,16 @@ using System.Text;
 
 namespace Lingya.Pagination
 {
-    const int MIN_PAGE_SIZE = 5;
-
     /// <summary>
-    /// 
+    /// 分页数据
     /// </summary>
     [DataContract]
     public partial class Paging {
+        ///<summary>
+        /// 每页最小数量
+        ///</summary>
+        const int MIN_PAGE_SIZE = 5;
+
         /// <inheritdoc />
         public Paging() {
             Page = 1;
