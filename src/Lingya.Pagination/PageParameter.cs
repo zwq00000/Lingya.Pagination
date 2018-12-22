@@ -13,6 +13,8 @@ namespace Lingya.Pagination {
         /// </summary>
         private const int DEFAULT_PAGE_SIZE = 20;
 
+        private const int MIN_PAGE_SIZE = 1;
+
         /// <inheritdoc />
         public PageParameter() {
             Page = 1;
@@ -25,7 +27,7 @@ namespace Lingya.Pagination {
         /// <param name="pageSize">页面大小.</param>
         /// <param name="pageNum">当前页码.</param>
         public PageParameter(int pageSize = 20, int pageNum = default(int)) {
-            PageSize = pageSize < 10 ? 10 : pageSize;
+            PageSize = pageSize < MIN_PAGE_SIZE ? MIN_PAGE_SIZE : pageSize;
             Page = pageNum < 0 ? 0 : pageNum;
         }
 
@@ -37,8 +39,8 @@ namespace Lingya.Pagination {
         public int PageSize {
             get => _pageSize;
             set {
-                if (value < 5) {
-                    _pageSize = 5;
+                if (value < MIN_PAGE_SIZE) {
+                    _pageSize = MIN_PAGE_SIZE;
                 } else {
                     _pageSize = value;
                 }

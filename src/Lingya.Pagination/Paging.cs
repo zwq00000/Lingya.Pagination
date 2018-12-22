@@ -5,6 +5,8 @@ using System.Text;
 
 namespace Lingya.Pagination
 {
+    const int MIN_PAGE_SIZE = 1;
+
     /// <summary>
     /// 
     /// </summary>
@@ -25,7 +27,7 @@ namespace Lingya.Pagination
         /// <param name="pageNum">当前页码.</param>
         public Paging(int total, int pageSize = 20, int pageNum = 1) {
             Total = total<0?0:total;
-            PageSize = pageSize<10?10:pageSize;
+            PageSize = pageSize<MIN_PAGE_SIZE?MIN_PAGE_SIZE:pageSize;
             Page = pageNum<1?1:pageNum;
             Pages = (int)Math.Ceiling(total / (double)pageSize);
 
