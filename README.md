@@ -1,4 +1,8 @@
-# Lingya.Pagination
+Lingya.Pagination
+===================
+
+[![Build status](https://ci.appveyor.com/api/projects/status/n0mgkxkxb87i9b1s?svg=true)](https://ci.appveyor.com/project/zwq000/lingya-pagination)
+
 Data Pagination For EntityFrameworkCore 
 
 ＃安装
