@@ -13,7 +13,7 @@ namespace Lingya.Pagination {
         /// </summary>
         private const int DEFAULT_PAGE_SIZE = 20;
 
-        private const int MIN_PAGE_SIZE = 1;
+        private const int MIN_PAGE_SIZE = 5;
 
         /// <inheritdoc />
         public PageParameter() {

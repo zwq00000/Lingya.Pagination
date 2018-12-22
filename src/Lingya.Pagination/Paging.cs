@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Lingya.Pagination
 {
-    const int MIN_PAGE_SIZE = 1;
+    const int MIN_PAGE_SIZE = 5;
 
     /// <summary>
     /// 
