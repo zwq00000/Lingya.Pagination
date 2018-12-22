@@ -68,7 +68,7 @@ PagingAsync 扩展方法返回一个包含泛型集合的 分页结果，包括 
 ```
 
 
-## PageParamete
+## 分页参数 PageParameter
 - PageSize 页面大小，默认20
 - Page 当前页码，默认为 1
 - SearchKey 搜索字符串，默认 null
