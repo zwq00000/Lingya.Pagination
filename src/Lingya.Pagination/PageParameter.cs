@@ -4,7 +4,7 @@ namespace Lingya.Pagination {
     /// <summary>
     /// 分页参数
     /// </summary>
-    public class PageParamete {
+    public class PageParameter {
         private int _page;
         private int _pageSize;
 
@@ -14,17 +14,17 @@ namespace Lingya.Pagination {
         private const int DEFAULT_PAGE_SIZE = 20;
 
         /// <inheritdoc />
-        public PageParamete() {
+        public PageParameter() {
             Page = 1;
             PageSize = DEFAULT_PAGE_SIZE;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PageParamete" /> class.
+        /// Initializes a new instance of the <see cref="PageParameter" /> class.
         /// </summary>
         /// <param name="pageSize">页面大小.</param>
         /// <param name="pageNum">当前页码.</param>
-        public PageParamete(int pageSize = 20, int pageNum = default(int)) {
+        public PageParameter(int pageSize = 20, int pageNum = default(int)) {
             PageSize = pageSize < 10 ? 10 : pageSize;
             Page = pageNum < 0 ? 0 : pageNum;
         }

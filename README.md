@@ -1,5 +1,5 @@
 # Lingya.Pagination
-Data Pagination For WebApi 
+Data Pagination For EntityFrameworkCore 
 
 ＃安装
 ```ps
@@ -13,7 +13,7 @@ PS> Install-Package  Lingya.Pagination
 ```c#
 [HttpGet()]
 [ProducesResponseType(statusCode: 200, type: typeof(PageResult<Use>))]
-public async Task<IActionResult> Index([FromQuery] PageParamete paramete = null) {
+public async Task<IActionResult> Index([FromQuery] PageParameter paramete = null) {
     var query = context.Users;
     return Ok(await query.PagingAsync(paramete));
 }
@@ -23,7 +23,7 @@ public async Task<IActionResult> Index([FromQuery] PageParamete paramete = null)
 ```c#
 [HttpGet()]
 [ProducesResponseType(statusCode: 200, type: typeof(PageResult<Use>))]
-public async Task<IActionResult> Index([FromQuery] PageParamete paramete = null) {
+public async Task<IActionResult> Index([FromQuery] PageParameter paramete = null) {
     if(paramete!=null || String.IsNullOrEmpty(paramete.SearchKey)){
       var query = context.Users.Where(u=>u.UserName.StartWith(parame.SearchKey));
       return Ok(await query.PagingAsync(paramete));
@@ -35,7 +35,15 @@ public async Task<IActionResult> Index([FromQuery] PageParamete paramete = null)
 ```
 
 3. Sort 排序
-...
+支持 多列 单顺序排序
+```c#
+var param = new PageParameter();
+param.SortBy = "Col1,Col2";
+param.Descending = true;
+return await query.PagingAsync(param);
+
+```
+
 
 ## 2. 返回格式
 PagingAsync 扩展方法返回一个包含泛型集合的 分页结果，包括 page对象和values集合,
@@ -43,10 +51,10 @@ PagingAsync 扩展方法返回一个包含泛型集合的 分页结果，包括 
 ```json
 {
   "page": {
-    "total": 0, #总记录数量
-    "pages": 0, #总页数
-    "pageSize": 0, #页面大小
-    "page": 0   #页号,从 1 开始计数
+    "total": 0, //总记录数量
+    "pages": 0, //总页数
+    "pageSize": 0, //页面大小
+    "page": 0   //页号,从 1 开始计数
   },
   "values": [
     {
