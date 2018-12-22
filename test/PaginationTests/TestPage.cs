@@ -102,7 +102,7 @@ namespace PaginationTests
             Assert.Equal(1, result.Page.Page);
             Assert.Equal(20, result.Page.PageSize);
             Assert.Equal(1, result.Page.Total);
-            Assert.Equal(1, result.Values.Count());
+            Assert.NotEmpty(result.Values);
             Assert.Equal("name_12", result.Values.First().UserName);
         }
 
