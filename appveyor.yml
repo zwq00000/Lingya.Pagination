@@ -8,3 +8,9 @@ before_build:
 build:
   publish_nuget: true
   verbosity: minimal
+deploy:
+- provider: NuGet
+  server: https://www.nuget.org
+  api_key:
+    secure: ER7KSGOjRFx1f4UYWOk78XnTfBLCZfxuTNF9LkhngT56WsvFl99FQFLrkPTTbCkl
+  skip_symbols: true
