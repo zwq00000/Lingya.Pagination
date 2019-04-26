@@ -77,6 +77,6 @@ namespace Lingya.Pagination {
         /// 逆序
         /// </summary>
         [DefaultValue(false)]
-        public bool Descending { get; set; }
+        public bool Descending { get; set; } = false;
     }
 }
