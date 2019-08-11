@@ -5,7 +5,13 @@ VisualStudioVersion = 15.0.28307.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lingya.Pagination", "src\Lingya.Pagination\Lingya.Pagination.csproj", "{2D4F0DC6-A44A-47ED-9513-1D0DC543A8A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaginationTests", "test\PaginationTests\PaginationTests.csproj", "{ACD284A0-00E0-44A4-A8CF-61C8442CE966}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaginationTests", "test\PaginationTests\PaginationTests.csproj", "{ACD284A0-00E0-44A4-A8CF-61C8442CE966}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BEB13FCE-E5ED-4A7A-844C-B2B0547EE059}"
+	ProjectSection(SolutionItems) = preProject
+		appveyor.yml = appveyor.yml
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

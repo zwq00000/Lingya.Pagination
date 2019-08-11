@@ -7,13 +7,12 @@ using Microsoft.Extensions.Logging;
 using PaginationTests.Mock;
 using Xunit;
 
-namespace PaginationTests
-{
-    public class TestPagination
+namespace PaginationTests {
+    public class TestPaginationAsync
     {
         private readonly TestDbContext _context;
 
-        public TestPagination()
+        public TestPaginationAsync()
         {
             var builder = new DbContextOptionsBuilder<TestDbContext>();
             builder.UseLoggerFactory(new LoggerFactory().AddDebug(LogLevel.Trace));
@@ -43,7 +42,7 @@ namespace PaginationTests
         [Fact]
         public async void TestNullParameter()
         {
-            var result = await this._context.Users.PagingAsync(null);
+            var result = await this._context.Users.ToPagingAsync(null);
             Assert.NotNull(result);
             Assert.Equal(1, result.Page.Page);
             Assert.Equal(20, result.Page.PageSize);
@@ -55,7 +54,7 @@ namespace PaginationTests
         public async void TestSortDesc()
         {
             var parameter = new PageParameter() { SortBy = "username", Descending = true };
-            var result = await this._context.Users.PagingAsync(parameter);
+            var result = await this._context.Users.ToPagingAsync(parameter);
             Assert.NotNull(result);
             Assert.Equal(1, result.Page.Page);
             Assert.Equal(20, result.Page.PageSize);
@@ -67,7 +66,7 @@ namespace PaginationTests
         public async void TestSort()
         {
             var parameter = new PageParameter() { SortBy = "createdDate" };
-            var result = await this._context.Users.PagingAsync(parameter);
+            var result = await this._context.Users.ToPagingAsync(parameter);
             Assert.NotNull(result);
             Assert.Equal(1, result.Page.Page);
             Assert.Equal(20, result.Page.PageSize);
@@ -79,7 +78,7 @@ namespace PaginationTests
         public async void TestMultiFieldSort()
         {
             var parameter = new PageParameter() { SortBy = "createdDate,fullName" };
-            var result = await this._context.Users.PagingAsync(parameter);
+            var result = await this._context.Users.ToPagingAsync(parameter);
             Assert.NotNull(result);
             Assert.Equal(1, result.Page.Page);
             Assert.Equal(20, result.Page.PageSize);
@@ -97,7 +96,7 @@ namespace PaginationTests
             const string searchKey = "name_12";
             var parameter = new PageParameter() { SearchKey = searchKey };
 
-            var result = await this._context.Users.Where(u => u.UserName.StartsWith(searchKey) || u.FullName.StartsWith(searchKey)).PagingAsync(parameter);
+            var result = await this._context.Users.Where(u => u.UserName.StartsWith(searchKey) || u.FullName.StartsWith(searchKey)).ToPagingAsync(parameter);
             Assert.NotNull(result);
             Assert.Equal(1, result.Page.Page);
             Assert.Equal(20, result.Page.PageSize);
