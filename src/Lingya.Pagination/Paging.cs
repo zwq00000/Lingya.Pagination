@@ -56,6 +56,7 @@ namespace Lingya.Pagination
         /// <value>总数量</value>
         [DataMember(Name = "total",IsRequired = false)]
         public int Total { get; set; }
+
         /// <summary>
         /// 总页数
         /// </summary>
@@ -69,6 +70,7 @@ namespace Lingya.Pagination
         /// <value>页面大小</value>
         [DataMember(Name = "pageSize")]
         public int PageSize { get; set; }
+
         /// <summary>
         /// 当前页码
         /// </summary>

@@ -4,8 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Lingya.Pagination {
-    internal static class OrderQueryableExtensions
-    {
+    internal static class OrderQueryableExtensions {
         /// <summary>
         /// 根据 排序字段名称 生成 新的查询
         /// </summary>
@@ -90,7 +89,7 @@ namespace Lingya.Pagination {
 
         private static Expression GenOrderByExpression<TSource>(this IQueryable<TSource> source, bool desc,
             params string[] fields) {
-            if (fields.Length == 0){
+            if (fields.Length == 0) {
                 return source.Expression;
             }
 
