@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace Lingya.Pagination {
-    public static class PagingExtensions {
+    /// <summary>
+    /// IQueryable{T} 异步分页扩展方法, IQueryable 需要支持 EntityFramework.Core
+    /// </summary>
+    public static class PagingAsyncExtensions {
         /// <summary>
         /// 默认分页大小
         /// </summary>
@@ -29,9 +32,9 @@ namespace Lingya.Pagination {
         /// <typeparam name="TResult"></typeparam>
         /// <param name="source"></param>
         /// <param name="parameter"></param>
-        /// <param name="selector"></param>
+        /// <param name="selector">输出结果选择器,<see cref="Enumerable.Select"/></param>
         /// <returns></returns>
-        public static async Task<PageResult<TResult>> PagingAsync<TSource, TResult>(this IQueryable<TSource> source,
+        public static async Task<PageResult<TResult>> ToPagingAsync<TSource, TResult>(this IQueryable<TSource> source,
             PageParameter parameter, Expression<Func<TSource, TResult>> selector) {
             if (parameter == null) {
                 parameter = new PageParameter();
@@ -44,7 +47,7 @@ namespace Lingya.Pagination {
             if (!string.IsNullOrEmpty(parameter.SortBy)) {
                 source = source.OrderByFields(parameter.SortBy, parameter.Descending);
                 //先查询再选择
-                var data = (await source.ToPage(paging)).Select(selector.Compile());
+                var data = (await source.ToPageAsync(paging)).Select(selector.Compile());
                 return new PageResult<TResult>(paging, data);
             } else {
                 //没有 排序字段,优化查询
@@ -52,7 +55,7 @@ namespace Lingya.Pagination {
             }
         }
 
-        public static async Task<PageResult<TSource>> PagingAsync<TSource>(this IQueryable<TSource> source,
+        public static async Task<PageResult<TSource>> ToPagingAsync<TSource>(this IQueryable<TSource> source,
             PageParameter parameter) {
             if (parameter == null) {
                 parameter = new PageParameter();
@@ -76,7 +79,7 @@ namespace Lingya.Pagination {
         /// <param name="pageSize"></param>
         /// <param name="pageNumber"></param>
         /// <returns></returns>
-        public static async Task<PageResult<T>> PagingAsync<T>(this IQueryable<T> source, int? pageSize,
+        public static async Task<PageResult<T>> ToPagingAsync<T>(this IQueryable<T> source, int? pageSize,
             int? pageNumber) {
             var psize = pageSize ?? DEFAULT_PAGE_SIZE;
             var pNumber = pageNumber ?? 1;
@@ -84,7 +87,14 @@ namespace Lingya.Pagination {
             return new PageResult<T>(paging, source);
         }
 
-        private static async Task<IEnumerable<T>> ToPage<T>(this IQueryable<T> source, Paging page) {
+        /// <summary>
+        /// Get Page Result, like Skip(skip) and Take(pageSize)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="page"></param>
+        /// <returns></returns>
+        private static async Task<IEnumerable<T>> ToPageAsync<T>(this IQueryable<T> source, Paging page) {
             return await source.Skip(page.Skip).Take(page.PageSize).ToArrayAsync();
         }
 
