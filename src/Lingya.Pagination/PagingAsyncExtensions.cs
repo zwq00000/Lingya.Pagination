@@ -32,7 +32,7 @@ namespace Lingya.Pagination {
         /// <typeparam name="TResult"></typeparam>
         /// <param name="source"></param>
         /// <param name="parameter"></param>
-        /// <param name="selector">输出结果选择器,<see cref="Enumerable.Select"/></param>
+        /// <param name="selector">输出结果选择器,<see cref="Queryable.Select{TSource, TResult}(IQueryable{TSource}, Expression{Func{TSource, TResult}})"/></param>
         /// <returns></returns>
         public static async Task<PageResult<TResult>> ToPagingAsync<TSource, TResult>(this IQueryable<TSource> source,
             PageParameter parameter, Expression<Func<TSource, TResult>> selector) {
