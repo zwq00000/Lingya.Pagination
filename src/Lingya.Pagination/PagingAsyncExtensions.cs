@@ -5,7 +5,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace Lingya.Pagination {
+namespace Lingya.Pagination
+{
     /// <summary>
     /// IQueryable{T} 异步分页扩展方法, IQueryable 需要支持 EntityFramework.Core
     /// </summary>

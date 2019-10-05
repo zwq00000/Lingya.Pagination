@@ -35,8 +35,7 @@ namespace Lingya.Pagination {
                 return source;
             }
 
-            var type = typeof(TSource);
-            var property = type.GetProperty(fieldName,
+            var property = source.ElementType.GetProperty(fieldName,
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
             if (property == null) {
                 return source;
@@ -51,7 +50,7 @@ namespace Lingya.Pagination {
             var result = Expression.Call(
                 typeof(Queryable),
                 cmd,
-                new Type[] { type, property.PropertyType },
+                new Type[] { source.ElementType, property.PropertyType },
                 source.Expression,
                 Expression.Quote(sortExpression));
 
