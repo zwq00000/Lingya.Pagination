@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Lingya.Pagination {
 
@@ -7,13 +8,14 @@ namespace Lingya.Pagination {
     /// 数据分页结果
     /// </summary>
     /// <typeparam name="TData"></typeparam>
+    [DataContract]
     public class PageResult<TData> {
 
         public PageResult(Paging page) {
             Page = page;
         }
 
-        public PageResult(Paging page, IQueryable<TData> source):this(page) {
+        public PageResult(Paging page, IQueryable<TData> source) : this(page) {
             Values = source.Skip(Page.Skip).Take(page.PageSize);
         }
 
@@ -24,12 +26,14 @@ namespace Lingya.Pagination {
         /// <summary>
         /// 分页信息
         /// </summary>
-        public Paging Page { get; set; }
+        [DataMember(Name = "page")]
+        public Paging Page { get; }
 
         /// <summary>
         /// 分页数据
         /// </summary>
-        public IEnumerable<TData> Values { get; set; }
+        [DataMember(Name = "values")]
+        public IEnumerable<TData> Values { get; }
 
     }
 }

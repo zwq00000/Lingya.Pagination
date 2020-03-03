@@ -15,7 +15,9 @@ namespace Lingya.Pagination
         ///</summary>
         const int MIN_PAGE_SIZE = 5;
 
-        /// <inheritdoc />
+        /// <summary>
+        /// 默认构造方法
+        /// </summary>
         public Paging() {
             Page = 1;
             PageSize = 20;
