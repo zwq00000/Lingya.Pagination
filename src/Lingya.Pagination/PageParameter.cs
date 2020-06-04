@@ -44,9 +44,12 @@ namespace Lingya.Pagination {
         /// <value>页面大小</value>
         [DefaultValue(20)]
         [DataMember(Name = "pageSize",IsRequired = false)]
-        public int PageSize {
+        public int? PageSize {
             get => _pageSize;
-            set => _pageSize = value < MinPageSize ? MinPageSize : value;
+            set {
+                var size = value ?? MinPageSize;
+                _pageSize = size < MinPageSize ? MinPageSize : size;
+            }
         }
 
         /// <summary>
@@ -55,9 +58,12 @@ namespace Lingya.Pagination {
         /// <value>当前页码</value>
         [DefaultValue(1)]
         [DataMember(Name = "page", IsRequired = false)]
-        public int Page {
+        public int? Page {
             get => _page;
-            set => _page = value < 1 ? 1 : value;
+            set {
+                var page = value ?? 1;
+                _page = page<1?1:page;
+            }
         }
 
         /// <summary>

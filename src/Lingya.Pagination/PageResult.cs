@@ -1,11 +1,11 @@
-using System.Collections.Generic;
+锘縰sing System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
 namespace Lingya.Pagination {
 
     /// <summary>
-    /// 数据分页结果
+    /// 鏁版嵁鍒嗛〉缁撴灉
     /// </summary>
     /// <typeparam name="TData"></typeparam>
     [DataContract]
@@ -24,13 +24,13 @@ namespace Lingya.Pagination {
         }
 
         /// <summary>
-        /// 分页信息
+        /// 鍒嗛〉淇℃伅
         /// </summary>
         [DataMember(Name = "page")]
         public Paging Page { get; }
 
         /// <summary>
-        /// 分页数据
+        /// 鍒嗛〉鏁版嵁
         /// </summary>
         [DataMember(Name = "values")]
         public IEnumerable<TData> Values { get; }
