@@ -15,6 +15,11 @@ namespace Lingya.Pagination {
         /// </summary>
         private const int DEFAULT_PAGE_SIZE = 20;
 
+        /// <summary>
+        /// 默认页码
+        /// </summary>
+        private const int DEFAULT_PAGE_NUMBER = 1;
+
         public static bool HasSearchKey(this PageParameter parameter) {
             return !string.IsNullOrEmpty(parameter?.SearchKey);
         }
@@ -25,14 +30,13 @@ namespace Lingya.Pagination {
         /// </summary>
         /// <remarks>
         /// 使用 SqlServerDbContextOptionsBuilder.UseRowNumberForPaging 时,使用 SortBy 字段会发生错误
-        /// 
         ///  Use a ROW_NUMBER() in queries instead of OFFSET/FETCH. This method is backwards-compatible to SQL Server 2005.
         /// </remarks>
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="source"></param>
         /// <param name="parameter"></param>
-        /// <param name="selector">输出结果选择器,<see cref="Enumerable.Select"/></param>
+        /// <param name="selector">输出结果选择器,<see cref="Enumerable.Select{TSource, TResult}(IEnumerable{TSource}, Func{TSource, int, TResult})"/></param>
         /// <returns></returns>
         public static async Task<PageResult<TResult>> ToPagingAsync<TSource, TResult>(this IQueryable<TSource> source,
             PageParameter parameter, Expression<Func<TSource, TResult>> selector) {
@@ -61,13 +65,11 @@ namespace Lingya.Pagination {
                 parameter = new PageParameter();
             }
 
-            var size = parameter.PageSize;
-            var pNumber = parameter.Page < 1 ? 1 : parameter.Page;
             if (!string.IsNullOrEmpty(parameter.SortBy)) {
                 source = source.OrderByFields(parameter.SortBy, parameter.Descending);
             }
 
-            var paging = await source.CreatePagingAsync(size, pNumber);
+            var paging = await source.CreatePagingAsync(parameter.PageSize, parameter.Page);
             return new PageResult<TSource>(paging, source);
         }
 
@@ -81,9 +83,7 @@ namespace Lingya.Pagination {
         /// <returns></returns>
         public static async Task<PageResult<T>> ToPagingAsync<T>(this IQueryable<T> source, int? pageSize,
             int? pageNumber) {
-            var psize = pageSize ?? DEFAULT_PAGE_SIZE;
-            var pNumber = pageNumber ?? 1;
-            var paging = await source.CreatePagingAsync(psize, pNumber);
+            var paging = await source.CreatePagingAsync(pageSize, pageNumber);
             return new PageResult<T>(paging, source);
         }
 
@@ -98,9 +98,9 @@ namespace Lingya.Pagination {
             return await source.Skip(page.Skip).Take(page.PageSize).ToArrayAsync();
         }
 
-        private static async Task<Paging> CreatePagingAsync<T>(this IQueryable<T> source, int pageSize, int pageNumber) {
+        private static async Task<Paging> CreatePagingAsync<T>(this IQueryable<T> source, int? pageSize, int? pageNumber) {
             var count = await source.CountAsync();
-            return new Paging(count, pageSize, pageNumber);
+            return new Paging(count, pageSize??DEFAULT_PAGE_SIZE, pageNumber??DEFAULT_PAGE_NUMBER);
         }
     }
 }

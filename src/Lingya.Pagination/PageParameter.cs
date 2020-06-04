@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel;
+using System.Runtime.Serialization;
 
 namespace Lingya.Pagination {
     /// <summary>
     /// 分页参数
     /// </summary>
+    [DataContract]
     public class PageParameter {
         private int _page;
         private int _pageSize;
@@ -11,14 +13,19 @@ namespace Lingya.Pagination {
         /// <summary>
         /// 默认分页大小
         /// </summary>
-        private const int DEFAULT_PAGE_SIZE = 20;
+        private const int DefaultPageSize = 20;
 
-        private const int MIN_PAGE_SIZE = 5;
+        /// <summary>
+        /// 最小页面大小
+        /// </summary>
+        private const int MinPageSize = 5;
 
-        /// <inheritdoc />
+        /// <summary>
+        /// 默认构造方法
+        /// </summary>
         public PageParameter() {
             Page = 1;
-            PageSize = DEFAULT_PAGE_SIZE;
+            PageSize = DefaultPageSize;
         }
 
         /// <summary>
@@ -27,7 +34,7 @@ namespace Lingya.Pagination {
         /// <param name="pageSize">页面大小.</param>
         /// <param name="pageNum">当前页码.</param>
         public PageParameter(int pageSize = 20, int pageNum = default(int)) {
-            PageSize = pageSize < MIN_PAGE_SIZE ? MIN_PAGE_SIZE : pageSize;
+            PageSize = pageSize < MinPageSize ? MinPageSize : pageSize;
             Page = pageNum < 0 ? 0 : pageNum;
         }
 
@@ -36,14 +43,12 @@ namespace Lingya.Pagination {
         /// </summary>
         /// <value>页面大小</value>
         [DefaultValue(20)]
-        public int PageSize {
+        [DataMember(Name = "pageSize",IsRequired = false)]
+        public int? PageSize {
             get => _pageSize;
             set {
-                if (value < MIN_PAGE_SIZE) {
-                    _pageSize = MIN_PAGE_SIZE;
-                } else {
-                    _pageSize = value;
-                }
+                var size = value ?? MinPageSize;
+                _pageSize = size < MinPageSize ? MinPageSize : size;
             }
         }
 
@@ -52,31 +57,32 @@ namespace Lingya.Pagination {
         /// </summary>
         /// <value>当前页码</value>
         [DefaultValue(1)]
-        public int Page {
+        [DataMember(Name = "page", IsRequired = false)]
+        public int? Page {
             get => _page;
             set {
-                if (value < 1) {
-                    _page = 1;
-                } else {
-                    _page = value;
-                }
+                var page = value ?? 1;
+                _page = page<1?1:page;
             }
         }
 
         /// <summary>
         /// 排序字段
         /// </summary>
+        [DataMember(Name = "sortBy",IsRequired = false)]
         public string SortBy { get; set; }
 
         /// <summary>
         /// 搜索值
         /// </summary>
+        [DataMember(Name = "searchKey", IsRequired = false)]
         public string SearchKey { get; set; }
 
         /// <summary>
         /// 逆序
         /// </summary>
         [DefaultValue(false)]
+        [DataMember(Name = "desc", IsRequired = false)]
         public bool Descending { get; set; } = false;
     }
 }

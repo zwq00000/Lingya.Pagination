@@ -15,10 +15,22 @@ namespace Lingya.Pagination
         ///</summary>
         const int MIN_PAGE_SIZE = 5;
 
-        /// <inheritdoc />
+              /// <summary>
+        /// 默认分页大小
+        /// </summary>
+        private const int DEFAULT_PAGE_SIZE = 20;
+
+        /// <summary>
+        /// 默认页码
+        /// </summary>
+        private const int DEFAULT_PAGE_NUMBER = 1;
+
+        /// <summary>
+        /// 默认构造方法
+        /// </summary>
         public Paging() {
-            Page = 1;
-            PageSize = 20;
+            Page = DEFAULT_PAGE_NUMBER;
+            PageSize = DEFAULT_PAGE_SIZE;
             Skip = 0;
         }
 
@@ -28,10 +40,12 @@ namespace Lingya.Pagination
         /// <param name="total">总数量.</param>
         /// <param name="pageSize">页面大小.</param>
         /// <param name="pageNum">当前页码.</param>
-        public Paging(int total, int pageSize = 20, int pageNum = 1) {
+        public Paging(int total, int? pageSize = DEFAULT_PAGE_SIZE, int? pageNum = DEFAULT_PAGE_NUMBER) {
             Total = total<0?0:total;
-            PageSize = pageSize<MIN_PAGE_SIZE?MIN_PAGE_SIZE:pageSize;
-            Page = pageNum<1?1:pageNum;
+            PageSize = pageSize??DEFAULT_PAGE_SIZE;
+            PageSize = Math.Max(MIN_PAGE_SIZE,PageSize);
+            Page = pageNum??DEFAULT_PAGE_NUMBER;
+            Page = Math.Max(1,Page);
             Pages = (int)Math.Ceiling(total / (double)pageSize);
 
             var skip = PageSize * (Page - 1);

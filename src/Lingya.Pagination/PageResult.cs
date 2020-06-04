@@ -1,19 +1,21 @@
-using System.Collections.Generic;
+锘縰sing System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Lingya.Pagination {
 
     /// <summary>
-    /// 数据分页结果
+    /// 鏁版嵁鍒嗛〉缁撴灉
     /// </summary>
     /// <typeparam name="TData"></typeparam>
+    [DataContract]
     public class PageResult<TData> {
 
         public PageResult(Paging page) {
             Page = page;
         }
 
-        public PageResult(Paging page, IQueryable<TData> source):this(page) {
+        public PageResult(Paging page, IQueryable<TData> source) : this(page) {
             Values = source.Skip(Page.Skip).Take(page.PageSize);
         }
 
@@ -22,14 +24,16 @@ namespace Lingya.Pagination {
         }
 
         /// <summary>
-        /// 分页信息
+        /// 鍒嗛〉淇℃伅
         /// </summary>
-        public Paging Page { get; set; }
+        [DataMember(Name = "page")]
+        public Paging Page { get; }
 
         /// <summary>
-        /// 分页数据
+        /// 鍒嗛〉鏁版嵁
         /// </summary>
-        public IEnumerable<TData> Values { get; set; }
+        [DataMember(Name = "values")]
+        public IEnumerable<TData> Values { get; }
 
     }
 }
