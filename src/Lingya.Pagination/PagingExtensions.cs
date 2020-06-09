@@ -42,9 +42,7 @@ namespace Lingya.Pagination {
                 parameter = new PageParameter();
             }
 
-            var size = parameter.PageSize;
-            var pNumber = parameter.Page < 1 ? 1 : parameter.Page;
-            var paging = source.CreatePaging(size, pNumber);
+            var paging = source.CreatePaging(parameter.PageSize, parameter.Page);
 
             if (!string.IsNullOrEmpty(parameter.SortBy)) {
                 source = source.OrderByFields(parameter.SortBy, parameter.Descending);
@@ -62,13 +60,11 @@ namespace Lingya.Pagination {
                 parameter = new PageParameter();
             }
 
-            var size = parameter.PageSize;
-            var pNumber = parameter.Page < 1 ? 1 : parameter.Page;
             if (!string.IsNullOrEmpty(parameter.SortBy)) {
                 source = source.OrderByFields(parameter.SortBy, parameter.Descending);
             }
 
-            var paging = source.CreatePaging(size, pNumber);
+            var paging = source.CreatePaging(parameter.PageSize, parameter.Page);
             return new PageResult<TSource>(paging, source);
         }
 
@@ -92,7 +88,7 @@ namespace Lingya.Pagination {
             return source.Skip(page.Skip).Take(page.PageSize).ToArray();
         }
 
-        private static Paging CreatePaging<T>(this IQueryable<T> source, int pageSize, int pageNumber) {
+        private static Paging CreatePaging<T>(this IQueryable<T> source, int? pageSize, int? pageNumber) {
             var count = source.Count();
             return new Paging(count, pageSize, pageNumber);
         }
