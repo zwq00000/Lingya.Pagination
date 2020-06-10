@@ -54,13 +54,13 @@ namespace PaginationTests {
             this._output = output;
         }
 
-        [Fact]
-        public void TestFilterExpressionBuilder() {
-            var users = new User[0];
-            var query = users.AsQueryable();
-            var expression = FilterExtensions.GenFilterExpression(query,"a",nameof(User.FullName),nameof(User.UserName));
-            _output.WriteLine(expression.ToString());
-        }
+        // [Fact]
+        // public void TestFilterExpressionBuilder() {
+        //     var users = new User[0];
+        //     var query = users.AsQueryable();
+        //     var expression = FilterExtensions.GenFilterExpression(query,"a",nameof(User.FullName),nameof(User.UserName));
+        //     _output.WriteLine(expression.ToString());
+        // }
 
         [Fact]
         public void TestToContains() {
@@ -70,18 +70,18 @@ namespace PaginationTests {
             //_output.WriteLine(exp.ToString());
         }
 
-        [Fact]
-        public void TestFilter() {
-            var users = new User[]{
-                new User(){FullName = "abc",UserName="Abc"},
-                new User(){FullName = "abc",UserName="123Abc"}
-            };
-            var query = users.AsQueryable();
-            Assert.NotNull(query.Expression);
-            var filted = query.Filter(new PageParameter() { SearchKey = "A" });
-            Assert.NotNull(filted);
-            Assert.Equal(2, filted.Count());
-        }
+        // [Fact]
+        // public void TestFilter() {
+        //     var users = new User[]{
+        //         new User(){FullName = "abc",UserName="Abc"},
+        //         new User(){FullName = "abc",UserName="123Abc"}
+        //     };
+        //     var query = users.AsQueryable();
+        //     Assert.NotNull(query.Expression);
+        //     var filted = query.Filter(new PageParameter() { SearchKey = "A" });
+        //     Assert.NotNull(filted);
+        //     Assert.Equal(2, filted.Count());
+        // }
 
         [Fact]
         public void TestFilterExpression() {

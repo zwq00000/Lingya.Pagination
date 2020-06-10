@@ -1,25 +1,39 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PaginationTests
 {
-    public sealed class ParseException : Exception
-    {
-        int position;
 
-        public ParseException(string message, int position)
-            : base(message) {
-            this.position = position;
+    internal class Signature : IEquatable<Signature> {
+        public DynamicProperty[] properties;
+        public int hashCode;
+
+        public Signature(IEnumerable<DynamicProperty> properties) {
+            this.properties = properties.ToArray();
+            hashCode = 0;
+            foreach (DynamicProperty p in properties) {
+                hashCode ^= p.Name.GetHashCode() ^ p.Type.GetHashCode();
+            }
         }
 
-        public int Position {
-            get { return position; }
+        public override int GetHashCode() {
+            return hashCode;
         }
 
-        public override string ToString() {
-            return string.Format(Res.ParseExceptionFormat, Message, position);
+        public override bool Equals(object obj) {
+            return obj is Signature ? Equals((Signature)obj) : false;
+        }
+
+        public bool Equals(Signature other) {
+            if (properties.Length != other.properties.Length) return false;
+            for (int i = 0; i < properties.Length; i++) {
+                if (properties[i].Name != other.properties[i].Name ||
+                    properties[i].Type != other.properties[i].Type) return false;
+            }
+            return true;
         }
     }
-} 
  
 /* Test Code 
 namespace Dynamic 
@@ -52,3 +66,4 @@ namespace Dynamic
 } 
  
 */
+}

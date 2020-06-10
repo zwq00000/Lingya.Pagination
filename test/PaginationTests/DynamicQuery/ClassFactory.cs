@@ -6,8 +6,7 @@ using System.Threading;
 
 namespace PaginationTests
 {
-    internal class ClassFactory
-    {
+    internal class ClassFactory {
         public static readonly ClassFactory Instance = new ClassFactory();
 
         static ClassFactory() { }  // Trigger lazy initialization of static fields 
@@ -19,8 +18,7 @@ namespace PaginationTests
 
         private ClassFactory() {
             AssemblyName name = new AssemblyName("DynamicClasses");
-           
-            AssemblyBuilder assembly = AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
+            AssemblyBuilder assembly =AssemblyBuilder.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);  //AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
 #if ENABLE_LINQ_PARTIAL_TRUST
             new ReflectionPermission(PermissionState.Unrestricted).Assert(); 
 #endif
@@ -80,7 +78,7 @@ namespace PaginationTests
             FieldInfo[] fields = new FieldBuilder[properties.Length];
             for (int i = 0; i < properties.Length; i++) {
                 DynamicProperty dp = properties[i];
-                FieldBuilder fb = tb.DefineField("_" + dp.Name, dp.Type, FieldAttributes.Private);
+                FieldBuilder fb = tb.DefineField($"_{dp.Name}", dp.Type, FieldAttributes.Private);
                 PropertyBuilder pb = tb.DefineProperty(dp.Name, PropertyAttributes.HasDefault, dp.Type, null);
                 MethodBuilder mbGet = tb.DefineMethod("get_" + dp.Name,
                     MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
@@ -159,35 +157,3 @@ namespace PaginationTests
         }
     }
 } 
- 
-/* Test Code 
-namespace Dynamic 
-{ 
-    class Program 
-    { 
-        static void Main(string[] args) 
-        { 
-            // For this sample to work, you need an active database server or SqlExpress. 
-            // Here is a connection to the Data sample project that ships with Microsoft Visual Studio 2008. 
-            string dbPath = Path.GetFullPath(Path.Combine(Application.StartupPath, @"..\..\..\..\Data\NORTHWND.MDF")); 
-            string sqlServerInstance = @".\SQLEXPRESS"; 
-            string connString = "AttachDBFileName='" + dbPath + "';Server='" + sqlServerInstance + "';user instance=true;Integrated Security=SSPI;Connection Timeout=60"; 
- 
-            // Here is an alternate connect string that you can modify for your own purposes. 
-            // string connString = "server=test;database=northwind;user id=test;password=test"; 
- 
-            Northwind db = new Northwind(connString); 
-            db.Log = Console.Out; 
- 
-            var query = 
-                db.Customers.Where("City == @0 and Orders.Count >= @1", "London", 10). 
-                OrderBy("CompanyName"). 
-                Select("New(CompanyName as Name, Phone)"); 
- 
-            Console.WriteLine(query); 
-            Console.ReadLine(); 
-        } 
-    } 
-} 
- 
-*/

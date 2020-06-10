@@ -1,7 +1,5 @@
-﻿namespace PaginationTests
-{
-    static class Res
-    {
+namespace PaginationTests {
+    static class Res {
         public const string DuplicateIdentifier = "The identifier '{0}' was defined more than once";
         public const string ExpressionTypeMismatch = "Expression of type '{0}' expected";
         public const string ExpressionExpected = "Expression expected";
@@ -47,36 +45,4 @@
         public const string CloseBracketOrCommaExpected = "']' or ',' expected";
         public const string IdentifierExpected = "Identifier expected";
     }
-} 
- 
-/* Test Code 
-namespace Dynamic 
-{ 
-    class Program 
-    { 
-        static void Main(string[] args) 
-        { 
-            // For this sample to work, you need an active database server or SqlExpress. 
-            // Here is a connection to the Data sample project that ships with Microsoft Visual Studio 2008. 
-            string dbPath = Path.GetFullPath(Path.Combine(Application.StartupPath, @"..\..\..\..\Data\NORTHWND.MDF")); 
-            string sqlServerInstance = @".\SQLEXPRESS"; 
-            string connString = "AttachDBFileName='" + dbPath + "';Server='" + sqlServerInstance + "';user instance=true;Integrated Security=SSPI;Connection Timeout=60"; 
- 
-            // Here is an alternate connect string that you can modify for your own purposes. 
-            // string connString = "server=test;database=northwind;user id=test;password=test"; 
- 
-            Northwind db = new Northwind(connString); 
-            db.Log = Console.Out; 
- 
-            var query = 
-                db.Customers.Where("City == @0 and Orders.Count >= @1", "London", 10). 
-                OrderBy("CompanyName"). 
-                Select("New(CompanyName as Name, Phone)"); 
- 
-            Console.WriteLine(query); 
-            Console.ReadLine(); 
-        } 
-    } 
-} 
- 
-*/
+}
