@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -43,6 +44,26 @@ namespace Lingya.Pagination {
         /// </summary>
         /// <returns></returns>
         Task<PageResult<TSource>> ToPagingAsync ();
+
+        /// <summary>
+        /// 获取分页结果
+        /// </summary>
+        /// <param name="selector">转换选择器
+        /// <see cref="Queryable.Select{TSource, TResult}(IQueryable{TSource}, Expression{Func{TSource, TResult}})"/>
+        /// </param>
+        /// <typeparam name="TResult"></typeparam>
+        /// <returns></returns>
+        PageResult<TResult> ToPaging<TResult> (Expression<Func<TSource, TResult>> selector);
+
+        /// <summary>
+        /// 异步获取分页结果
+        /// </summary>
+        /// <param name="selector">转换选择器
+        /// <see cref="Queryable.Select{TSource, TResult}(IQueryable{TSource}, Expression{Func{TSource, TResult}})"/>
+        /// </param>
+        /// <typeparam name="TResult"></typeparam>
+        /// <returns></returns>
+        Task<PageResult<TResult>> ToPagingAsync<TResult> (Expression<Func<TSource, TResult>> selector);
     }
 
 }

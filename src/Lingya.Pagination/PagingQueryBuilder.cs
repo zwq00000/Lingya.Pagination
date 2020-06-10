@@ -52,6 +52,14 @@ namespace Lingya.Pagination {
         public async Task<PageResult<TSource>> ToPagingAsync () {
             return await this._query.ToPagingAsync (this.parameter);
         }
+
+        public PageResult<TResult> ToPaging<TResult>(Expression<Func<TSource, TResult>> selector){
+            return this._query.ToPaging(this.parameter,selector);
+        }
+
+        public async Task<PageResult<TResult>> ToPagingAsync<TResult>(Expression<Func<TSource, TResult>> selector){
+            return await this._query.ToPagingAsync(this.parameter,selector);
+        }
     }
 
     public static class PagingBuilderExtensions {
