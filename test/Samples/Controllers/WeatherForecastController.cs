@@ -57,7 +57,11 @@ namespace Samples.Controllers {
 
         [HttpPost ()]
         public async Task<ActionResult> Create ([FromForm] WeatherForecast weather) {
+            ModelState.Remove(nameof(weather.Id));
             if (this.ModelState.IsValid) {
+                if(weather.Id!=0){
+                    return BadRequest($"weather id = {weather.Id}");
+                }
                 //weather.Id = 0;
                 await context.WeatherForecasts.AddAsync (weather);
                 await context.SaveChangesAsync ();

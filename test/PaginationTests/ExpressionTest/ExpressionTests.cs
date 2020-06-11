@@ -53,7 +53,7 @@ namespace PaginationTests.ExpressionTest {
         [Fact]
         public void TestContains () {
             var key = "1";
-            Expression<Func<User, bool>> exp = u => u.FullName.Contains (key);
+            Expression<Func<User, bool>> exp = u => (u.FullName!=null && u.FullName.Contains (key) || (u.DepName!=null && u.DepName.StartsWith(key)));
             _output.WriteLine (exp.ToString ());
 
             _output.WriteLine (exp.Body.ToString ());
@@ -67,8 +67,8 @@ namespace PaginationTests.ExpressionTest {
             var result = exp1.Or (exp2, exp3);
             _output.WriteLine (result.ToString ());
 
-            var parameter =Expression.Parameter (typeof (User), "u");
-            result = new ParameterReplacer(parameter).Visit(result);
+            var parameter = Expression.Parameter (typeof (User), "u");
+            result = new ParameterReplacer (parameter).Visit (result);
 
             var exp = Expression.Lambda<Func<User, bool>> (result, false, parameter);
 
@@ -83,6 +83,15 @@ namespace PaginationTests.ExpressionTest {
 
             UserQuery.EndsWith ("12", u => u.FullName, u => u.UserName);
             Xunit.Assert.NotEmpty (UserQuery.ToArray ());
+        }
+
+        [Fact]
+        public void TestGetWhereExpression () {
+            var exp = UserQuery.GetWhereExpression ("1", ExpressionExtensions.StringContainsMethod, u => u.FullName, u => u.DepName);
+            Assert.NotNull (exp);
+            _output.WriteLine (exp.ToString ());
+            var query = UserQuery.Provider.CreateQuery (exp);
+            Assert.NotEmpty (query);
         }
     }
 
@@ -100,18 +109,37 @@ namespace PaginationTests.ExpressionTest {
 
     internal static class ExpressionExtensions {
 
-        private static MethodInfo StringContainsMethod = typeof (string).GetMethod (nameof (string.Contains), new Type[] { typeof (string) });
-        private static MethodInfo StringStartsWithMethod = typeof (string).GetMethod (nameof (string.StartsWith), new Type[] { typeof (string) });
-        private static MethodInfo StringEndsWithMethod = typeof (string).GetMethod (nameof (string.EndsWith), new Type[] { typeof (string) });
+        public static MethodInfo StringContainsMethod = typeof (string).GetMethod (nameof (string.Contains), new Type[] { typeof (string) });
+        public static MethodInfo StringStartsWithMethod = typeof (string).GetMethod (nameof (string.StartsWith), new Type[] { typeof (string) });
+        public static MethodInfo StringEndsWithMethod = typeof (string).GetMethod (nameof (string.EndsWith), new Type[] { typeof (string) });
+
+        public static MethodCallExpression GetWhereExpression<TSource> (this IQueryable<TSource> source,
+            string searchKey,
+            MethodInfo method,
+            Expression<Func<TSource, string>> member,
+            params Expression<Func<TSource, string>>[] others) {
+            var parameter = GetParameterExpression (member);
+            var logics = member.ToSearchLambda (method, searchKey)
+                .Or (others.Select (m => m.ToSearchLambda (method, searchKey)).ToArray ());
+            logics = new ParameterReplacer (parameter).Visit (logics);
+            var whereExpression = Expression.Lambda<Func<TSource, bool>> (logics, false, parameter);
+            Debug.WriteLine (whereExpression);
+
+            //生成 .where(u=>...) 方法调用表达式
+            return Expression.Call (
+                typeof (Queryable), nameof (Queryable.Where),
+                new Type[] { source.ElementType},
+                source.Expression,whereExpression);
+        }
 
         public static IQueryable<TSource> Contains<TSource> (this IQueryable<TSource> query,
             string searchKey,
             Expression<Func<TSource, string>> containsMember,
             params Expression<Func<TSource, string>>[] containsMembers) {
-                var method = StringStartsWithMethod;
+            var method = StringStartsWithMethod;
             var parameter = GetParameterExpression (containsMember);
-            var logics = containsMember.ToLambda(method, searchKey).
-            Or (containsMembers.Select (e => e.ToLambda (method,searchKey)).ToArray ());
+            var logics = containsMember.ToSearchLambda (method, searchKey).
+            Or (containsMembers.Select (e => e.ToSearchLambda (method, searchKey)).ToArray ());
 
             logics = (BinaryExpression) new ParameterReplacer (parameter).Visit (logics);
             var expression = Expression.Lambda<Func<TSource, bool>> (logics, false, parameter);
@@ -125,9 +153,9 @@ namespace PaginationTests.ExpressionTest {
             params Expression<Func<TSource, string>>[] containsMembers) {
             var method = StringStartsWithMethod;
             var parameter = GetParameterExpression (containsMember);
-            containsMember.ToLambda (method, searchKey);
-            var logics = containsMember.ToLambda (method, searchKey)
-                .Or (containsMembers.Select (e => e.ToLambda (method, searchKey)).ToArray ());
+            containsMember.ToSearchLambda (method, searchKey);
+            var logics = containsMember.ToSearchLambda (method, searchKey)
+                .Or (containsMembers.Select (e => e.ToSearchLambda (method, searchKey)).ToArray ());
             logics = (BinaryExpression) new ParameterReplacer (parameter).Visit (logics);
             var expression = Expression.Lambda<Func<TSource, bool>> (logics, false, parameter);
             Debug.WriteLine (expression);
@@ -144,13 +172,16 @@ namespace PaginationTests.ExpressionTest {
             return query.Where (expression);
         }
 
-        public static Expression<Func<TSource, bool>> ToLambda<TSource> (this Expression<Func<TSource, string>> containsMember,
+        public static Expression<Func<TSource, bool>> ToSearchLambda<TSource> (this Expression<Func<TSource, string>> containsMember,
             MethodInfo method,
             string searchKey) {
             var memberAccess = GetMemberExpression (containsMember);
             var leftParameter = GetParameterExpression (memberAccess);
             var constant = Expression.Constant (searchKey);
-            return Expression.Lambda<Func<TSource, bool>> (Expression.Call (memberAccess, method, constant), false, leftParameter);
+            var nullConstant = Expression.Constant(null);
+            var notNullExp = Expression.ReferenceNotEqual(memberAccess,nullConstant);
+            return Expression.Lambda<Func<TSource, bool>> (
+                Expression.AndAlso(notNullExp,Expression.Call (memberAccess, method, constant)), false, leftParameter);
         }
 
         private static Expression<Func<TSource, bool>> ToContainsExpression<TSource> (this Expression<Func<TSource, string>> containsMember, string searchKey) {
@@ -189,7 +220,7 @@ namespace PaginationTests.ExpressionTest {
             var exp = (Expression) expression.Body;
 
             foreach (var item in others) {
-                exp = Expression.OrElse (exp, item.Body);
+                exp = Expression.OrElse (exp,item.Body);
                 //((MemberExpression)((MethodCallExpression) item.Body).Object).Expression = expression.Parameters[0];
             }
             return exp;

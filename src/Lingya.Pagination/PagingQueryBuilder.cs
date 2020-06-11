@@ -1,20 +1,25 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Lingya.Pagination
-{
+namespace Lingya.Pagination {
 
     internal class PagingQueryBuilder<TSource> : IPagingQueryBuilder<TSource> {
         private IQueryable<TSource> _query;
         private readonly PageParameter parameter;
 
+        private IList<Expression> whereExpression;
+
         public PagingQueryBuilder (IQueryable<TSource> queryable, PageParameter parameter) {
             this._query = queryable;
             this.parameter = parameter;
+            if (parameter.HasSearchKey ()) {
+                whereExpression = new List<Expression> ();
+            }
         }
 
         private IQueryable<TSource> Query => _query;
@@ -54,12 +59,12 @@ namespace Lingya.Pagination
             return await this._query.ToPagingAsync (this.parameter);
         }
 
-        public PageResult<TResult> ToPaging<TResult>(Expression<Func<TSource, TResult>> selector){
-            return this._query.ToPaging(this.parameter,selector);
+        public PageResult<TResult> ToPaging<TResult> (Expression<Func<TSource, TResult>> selector) {
+            return this._query.ToPaging (this.parameter, selector);
         }
 
-        public async Task<PageResult<TResult>> ToPagingAsync<TResult>(Expression<Func<TSource, TResult>> selector){
-            return await this._query.ToPagingAsync(this.parameter,selector);
+        public async Task<PageResult<TResult>> ToPagingAsync<TResult> (Expression<Func<TSource, TResult>> selector) {
+            return await this._query.ToPagingAsync (this.parameter, selector);
         }
     }
 
@@ -103,27 +108,46 @@ namespace Lingya.Pagination
             return query.BuildSearchQuery (searchKey, StringEndsWithMethod, member, others);
         }
 
+        /// <summary>
+        /// 生成 .where(u=>...) 方法调用表达式
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="whereExpression"></param>
+        /// <typeparam name="TSource"></typeparam>
+        /// <returns></returns>
+        public static MethodCallExpression MakeWhereExpression<TSource> (this IQueryable<TSource> source,
+            Expression<Func<TSource,bool>> whereExpression) {
+            //生成 .where(u=>...) 方法调用表达式
+            return Expression.Call (
+                typeof (Queryable), nameof (Queryable.Where),
+                new Type[] { source.ElementType},
+                source.Expression,whereExpression);
+        }
+
         private static IQueryable<TSource> BuildSearchQuery<TSource> (this IQueryable<TSource> query,
             string searchKey,
             MethodInfo method,
             Expression<Func<TSource, string>> member,
             params Expression<Func<TSource, string>>[] others) {
             var parameter = GetParameterExpression (member);
-            var logics = member.ToLambda (method, searchKey)
-                .Or (others.Select (m => m.ToLambda (method, searchKey)).ToArray ());
+            var logics = member.ToSearchLambda (method, searchKey)
+                .Or (others.Select (m => m.ToSearchLambda (method, searchKey)).ToArray ());
             logics = new ParameterReplacer (parameter).Visit (logics);
             var expression = Expression.Lambda<Func<TSource, bool>> (logics, false, parameter);
             Debug.WriteLine (expression);
             return query.Where (expression);
         }
 
-        private static Expression<Func<TSource, bool>> ToLambda<TSource> (this Expression<Func<TSource, string>> expression,
+        private static Expression<Func<TSource, bool>> ToSearchLambda<TSource> (this Expression<Func<TSource, string>> expression,
             MethodInfo method,
             string searchKey) {
             var memberAccess = expression.Body;
             var leftParameter = GetParameterExpression (memberAccess);
             var constant = Expression.Constant (searchKey);
-            return Expression.Lambda<Func<TSource, bool>> (Expression.Call (memberAccess, method, constant), false, leftParameter);
+            var nullConstant = Expression.Constant (null);
+            var notNullExp = Expression.ReferenceNotEqual (memberAccess, nullConstant);
+            return Expression.Lambda<Func<TSource, bool>> (
+                Expression.AndAlso (notNullExp, Expression.Call (memberAccess, method, constant)), false, leftParameter);
         }
 
         public static Expression Or<TSource> (this Expression<Func<TSource, bool>> expression, params Expression<Func<TSource, bool>>[] others) {
