@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <SharedFrameworkVersion>2.2.0</SharedFrameworkVersion>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <PackageId>Lingya.Pagination</PackageId>
     <Authors>zwq00000@hotmail.com</Authors>
     <Company>Tianjin Lingya Tech CO.</Company>
@@ -14,16 +13,20 @@
     <PackageProjectUrl>https://github.com/zwq00000/Lingya.Pagination</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseUrl>http://www.apache.org/licenses/</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
-  
+
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="$(SharedFrameworkVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.*" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.*" />
   </ItemGroup>
 
 </Project>

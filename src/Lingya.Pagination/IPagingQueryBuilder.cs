@@ -13,7 +13,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
-        IPagingQueryBuilder<TSource> Contains (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
+        IPagingQueryBuilder<TSource> ContainsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
         /// 增加 使用 <see cref="String.StartsWith(string)" /> 搜索的过滤属性
@@ -22,7 +22,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
-        IPagingQueryBuilder<TSource> StartsWith (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
+        IPagingQueryBuilder<TSource> StartsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
         /// 增加 使用 <see cref="String.EndsWith(string)" /> 搜索的过滤属性
@@ -31,7 +31,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
-        IPagingQueryBuilder<TSource> EndsWith (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
+        IPagingQueryBuilder<TSource> EndsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
         /// 获取分页结果

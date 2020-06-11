@@ -50,54 +50,15 @@ namespace PaginationTests {
     {
         private ITestOutputHelper _output;
 
-        public FilterExpressionTests(Xunit.Abstractions.ITestOutputHelper output) {
+        public FilterExpressionTests(ITestOutputHelper output) {
             this._output = output;
         }
 
-        // [Fact]
-        // public void TestFilterExpressionBuilder() {
-        //     var users = new User[0];
-        //     var query = users.AsQueryable();
-        //     var expression = FilterExtensions.GenFilterExpression(query,"a",nameof(User.FullName),nameof(User.UserName));
-        //     _output.WriteLine(expression.ToString());
-        // }
-
         [Fact]
-        public void TestToContains() {
-            var para =  Expression.Parameter(typeof(User), "u");
-            var member = Expression.MakeMemberAccess(para, typeof(User).GetProperty(nameof(User.FullName)));
-            //var exp = FilterExtensions.ToContains<User>(member, "test");
-            //_output.WriteLine(exp.ToString());
-        }
-
-        // [Fact]
-        // public void TestFilter() {
-        //     var users = new User[]{
-        //         new User(){FullName = "abc",UserName="Abc"},
-        //         new User(){FullName = "abc",UserName="123Abc"}
-        //     };
-        //     var query = users.AsQueryable();
-        //     Assert.NotNull(query.Expression);
-        //     var filted = query.Filter(new PageParameter() { SearchKey = "A" });
-        //     Assert.NotNull(filted);
-        //     Assert.Equal(2, filted.Count());
-        // }
-
-        [Fact]
-        public void TestFilterExpression() {
-            var users = new User[0];
-
-            var query = users.AsQueryable(); //CreateTestQuery(users.AsQueryable());
-            Assert.NotNull(query.Expression);
-            query.Where(u => u.FullName.Contains("a"));
-            var expression = FilterExpression();
+        public void TestPredicateExpression() {
+            Expression<Func<User, bool>> expression = u => u.FullName.Contains("a");
             _output.WriteLine(expression.ToString());
-            Assert.Equal("", expression.ToString());
-        }
-
-
-        private Expression<Func<User, bool>> FilterExpression() {
-            return u => u.FullName.Contains("a");
+            Assert.Equal("u => u.FullName.Contains(\"a\")", expression.ToString());
         }
     }
 }

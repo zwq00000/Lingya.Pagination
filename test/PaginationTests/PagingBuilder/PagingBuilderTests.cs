@@ -14,7 +14,7 @@ public class PagingBuilderTests {
     public void TestBuild () {
         var parameter = new PageParameter ();
         var result = context.Users.AsQueryable ().PagingBuilder (parameter)
-            .Contains (u => u.FullName, u => u.UserName).ToPaging ();
+            .ContainsFor (u => u.FullName, u => u.UserName).ToPaging ();
         Assert.NotNull (result);
         Assert.Equal (20, result.Page.PageSize);
         Assert.Equal (1, result.Page.Page);
@@ -25,7 +25,7 @@ public class PagingBuilderTests {
     public void TestSearchKey () {
         var parameter = new PageParameter () { SearchKey = "2" };
         var result = context.Users.AsQueryable ().PagingBuilder (parameter)
-            .Contains (u => u.FullName, u => u.UserName).ToPaging ();
+            .ContainsFor (u => u.FullName, u => u.UserName).ToPaging ();
         Assert.NotNull (result);
         Assert.Equal (20, result.Page.PageSize);
         Assert.Equal (1, result.Page.Page);
@@ -35,17 +35,12 @@ public class PagingBuilderTests {
 
     [Fact]
     public void TestSearchDateTime () {
-        var query = context.Users.AsQueryable ();
-        var q1 = query.Where(u=>u.CreatedDate.ToShortDateString().EndsWith("2"));
-        Assert.NotEmpty(q1.ToArray());
-
-        var parameter = new PageParameter () { SearchKey = "2" };
+        var parameter = new PageParameter () { SearchKey = "20" };
         var result = context.Users.AsQueryable ().PagingBuilder (parameter)
-            .Contains (u => u.CreatedDate.ToShortDateString()).ToPaging ();
+            .ContainsFor (u => u.CreatedDate.ToShortDateString()).ToPaging ();
         Assert.NotNull (result);
         Assert.Equal (20, result.Page.PageSize);
         Assert.Equal (1, result.Page.Page);
-        Assert.Equal (19, result.Page.Total);
-        Assert.Equal (19, result.Values.Count ());
+        Assert.NotEmpty(result.Values);
     }
 }

@@ -18,7 +18,7 @@ namespace Lingya.Pagination {
 
         private IQueryable<TSource> Query => _query;
 
-        public IPagingQueryBuilder<TSource> Contains (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
+        public IPagingQueryBuilder<TSource> ContainsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
             if (!parameter.HasSearchKey ()) {
                 return this;
             }
@@ -27,7 +27,7 @@ namespace Lingya.Pagination {
             return this;
         }
 
-        public IPagingQueryBuilder<TSource> EndsWith (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
+        public IPagingQueryBuilder<TSource> EndsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
             if (!parameter.HasSearchKey ()) {
                 return this;
             }
@@ -36,7 +36,7 @@ namespace Lingya.Pagination {
             return this;
         }
 
-        public IPagingQueryBuilder<TSource> StartsWith (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
+        public IPagingQueryBuilder<TSource> StartsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
             if (!parameter.HasSearchKey ()) {
                 return this;
             }
@@ -121,17 +121,17 @@ namespace Lingya.Pagination {
             params Expression<Func<TSource, string>>[] others) {
             var parameter = GetParameterExpression (member);
             var logics = member.ToLambda (method, searchKey)
-                .Or (others.Select (e => e.ToLambda (method, searchKey)).ToArray ());
-            logics = (BinaryExpression) new ParameterReplacer (parameter).Visit (logics);
+                .Or (others.Select (m => m.ToLambda (method, searchKey)).ToArray ());
+            logics = new ParameterReplacer (parameter).Visit (logics);
             var expression = Expression.Lambda<Func<TSource, bool>> (logics, false, parameter);
             Debug.WriteLine (expression);
             return query.Where (expression);
         }
 
-        private static Expression<Func<TSource, bool>> ToLambda<TSource> (this Expression<Func<TSource, string>> containsMember,
+        private static Expression<Func<TSource, bool>> ToLambda<TSource> (this Expression<Func<TSource, string>> expression,
             MethodInfo method,
             string searchKey) {
-            var memberAccess = GetMemberExpression (containsMember);
+            var memberAccess = expression.Body; //GetMemberExpression (containsMember);
             var leftParameter = GetParameterExpression (memberAccess);
             var constant = Expression.Constant (searchKey);
             return Expression.Lambda<Func<TSource, bool>> (Expression.Call (memberAccess, method, constant), false, leftParameter);

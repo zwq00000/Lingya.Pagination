@@ -61,35 +61,23 @@ namespace PaginationTests.ExpressionTest {
 
         [Fact]
         public void TestOrExpression () {
-            Expression<Func<User, bool>> exps = u => u.FullName.Contains ("1") || u.UserName.Contains ("1");
-            _output.WriteLine (exps.ToString ());
-
             Expression<Func<User, bool>> exp1 = u => u.FullName.Contains ("1");
             Expression<Func<User, bool>> exp2 = u => u.FullName.Contains ("2");
             Expression<Func<User, bool>> exp3 = u => u.FullName.Contains ("3");
             var result = exp1.Or (exp2, exp3);
             _output.WriteLine (result.ToString ());
 
-            var exp = Expression.Lambda<Func<User, bool>> (result, false, //  Expression.Parameter (typeof (User), "u"));
-                    ExpressionExtensions.GetParameterExpression (exp1)
-                );
+            var parameter =Expression.Parameter (typeof (User), "u");
+            result = new ParameterReplacer(parameter).Visit(result);
 
-            //var query = users.AsQueryable ();
+            var exp = Expression.Lambda<Func<User, bool>> (result, false, parameter);
+
             Assert.NotEmpty (UserQuery.Where (exp));
-
-            Assert.Equal (10, UserQuery.Where (exp).Count ());
-        }
-
-        [Fact]
-        public void TestWhereContains () {
-            //var query = users.AsQueryable ();
-            var query = UserQuery.Contains ("1", u => u.FullName, u => u.UserName);
-            Assert.NotEmpty (query.ToArray ());
+            Assert.Equal (30, UserQuery.Where (exp).Count ());
         }
 
         [Fact]
         public void TestEndsWith () {
-            //var query = users.AsQueryable ();
             UserQuery.EndsWith ("12", u => u.FullName);
             Xunit.Assert.NotEmpty (UserQuery.ToArray ());
 
