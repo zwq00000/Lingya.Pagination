@@ -131,7 +131,7 @@ namespace Lingya.Pagination {
         private static Expression<Func<TSource, bool>> ToLambda<TSource> (this Expression<Func<TSource, string>> expression,
             MethodInfo method,
             string searchKey) {
-            var memberAccess = expression.Body; //GetMemberExpression (containsMember);
+            var memberAccess = expression.Body;
             var leftParameter = GetParameterExpression (memberAccess);
             var constant = Expression.Constant (searchKey);
             return Expression.Lambda<Func<TSource, bool>> (Expression.Call (memberAccess, method, constant), false, leftParameter);
