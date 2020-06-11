@@ -45,11 +45,11 @@ namespace Lingya.Pagination {
             var propertyAccess = Expression.MakeMemberAccess(param, property);
             var sortExpression = Expression.Lambda(propertyAccess, param);
 
-            var cmd = desc ? "OrderByDescending" : "OrderBy";
+            var sortMethod = GetSortMethodName(desc);;
 
             var result = Expression.Call(
                 typeof(Queryable),
-                cmd,
+                sortMethod,
                 new Type[] { source.ElementType, property.PropertyType },
                 source.Expression,
                 Expression.Quote(sortExpression));
@@ -74,11 +74,11 @@ namespace Lingya.Pagination {
             var propertyAccess = Expression.MakeMemberAccess(param, property);
             var sortExpression = Expression.Lambda(propertyAccess, param);
 
-            var ascending = desc ? "OrderByDescending" : "OrderBy";
+            var sortMethod = GetSortMethodName(desc);
 
             var result = Expression.Call(
                 typeof(Queryable),
-                @ascending,
+                sortMethod,
                 new Type[] { type, property.PropertyType },
                 source.Expression,
                 Expression.Quote(sortExpression));
@@ -93,8 +93,8 @@ namespace Lingya.Pagination {
             }
 
             Expression queryExpr = source.Expression;
-            string methodAsc = "OrderBy";
-            string methodDesc = "OrderByDescending";
+            string methodOrderByAsc = nameof(Queryable.OrderBy);
+            string methodOrderByDesc = nameof(Queryable.OrderByDescending);
 
             foreach (var field in fields) {
                 var exp = source.ElementType.GenMemberAccessExpression(field);
@@ -105,12 +105,12 @@ namespace Lingya.Pagination {
                 }
 
                 queryExpr = Expression.Call(
-                    typeof(Queryable), desc ? methodDesc : methodAsc,
+                    typeof(Queryable), desc ? methodOrderByDesc : methodOrderByAsc,
                     new Type[] { source.ElementType, property.PropertyType },
                     queryExpr, Expression.Quote(exp));
 
-                methodAsc = "ThenBy";
-                methodDesc = "ThenByDescending";
+                methodOrderByAsc = nameof(Queryable.ThenBy);
+                methodOrderByDesc = nameof(Queryable.ThenByDescending);
             }
 
             return queryExpr;
@@ -133,6 +133,10 @@ namespace Lingya.Pagination {
             var propertyAccess = Expression.MakeMemberAccess(param, property);
             var sortExpression = Expression.Lambda(propertyAccess, param);
             return sortExpression;
+        }
+
+        private static string GetSortMethodName(bool descending){
+            return descending ? nameof(Queryable.OrderByDescending):nameof(Queryable.OrderBy);
         }
     }
 }

@@ -5,7 +5,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Lingya.Pagination {
+namespace Lingya.Pagination
+{
 
     internal class PagingQueryBuilder<TSource> : IPagingQueryBuilder<TSource> {
         private IQueryable<TSource> _query;
@@ -59,18 +60,6 @@ namespace Lingya.Pagination {
 
         public async Task<PageResult<TResult>> ToPagingAsync<TResult>(Expression<Func<TSource, TResult>> selector){
             return await this._query.ToPagingAsync(this.parameter,selector);
-        }
-    }
-
-    public static class PagingBuilderExtensions {
-        public static IPagingQueryBuilder<TSource> PagingBuilder<TSource> (this IQueryable<TSource> source,
-            PageParameter parameter) {
-
-            if (parameter == null) {
-                parameter = new PageParameter ();
-            }
-
-            return new PagingQueryBuilder<TSource> (source, parameter);
         }
     }
 
