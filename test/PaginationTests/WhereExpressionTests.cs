@@ -1,11 +1,14 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using Lingya.Pagination;
 using PaginationTests.Mock;
 using Remotion.Linq;
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.Expressions;
 using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace PaginationTests {
     public class WhereExpressionTests {
@@ -25,6 +28,7 @@ namespace PaginationTests {
             //Assert.Equal("", ordering.ToString());
         }
 
+
         public static QueryModel CreateQueryModel<T>(IQueryable<T> queryable) {
             return CreateQueryModel(CreateMainFromClause_Int("s", typeof(T), queryable));
         }
@@ -39,6 +43,22 @@ namespace PaginationTests {
 
         public IQueryable<User> CreateTestQuery(IQueryable<User> users) {
             return users.Where(u => u.FullName.Contains("a"));
+        }
+    }
+
+    public class FilterExpressionTests
+    {
+        private ITestOutputHelper _output;
+
+        public FilterExpressionTests(ITestOutputHelper output) {
+            this._output = output;
+        }
+
+        [Fact]
+        public void TestPredicateExpression() {
+            Expression<Func<User, bool>> expression = u => u.FullName.Contains("a");
+            _output.WriteLine(expression.ToString());
+            Assert.Equal("u => u.FullName.Contains(\"a\")", expression.ToString());
         }
     }
 }

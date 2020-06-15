@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Lingya.Pagination;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using PaginationTests.Mock;
 using Xunit;
 
-namespace PaginationTests {
+namespace PaginationTests
+{
     public class TestPagination {
 
         private IEnumerable<User> _users;

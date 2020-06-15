@@ -5,7 +5,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace Lingya.Pagination {
+namespace Lingya.Pagination
+{
     /// <summary>
     /// IQueryable{T} 异步分页扩展方法, IQueryable 需要支持 EntityFramework.Core
     /// </summary>
@@ -50,13 +51,11 @@ namespace Lingya.Pagination {
 
             if (!string.IsNullOrEmpty(parameter.SortBy)) {
                 source = source.OrderByFields(parameter.SortBy, parameter.Descending);
-                //先查询再选择
-                var data = (await source.ToPageAsync(paging)).Select(selector.Compile());
-                return new PageResult<TResult>(paging, data);
-            } else {
-                //没有 排序字段,优化查询
-                return new PageResult<TResult>(paging, source.Select(selector));
-            }
+                // //先查询再选择
+                // var data = (await source.ToPageAsync(paging)).Select(selector.Compile());
+                // return new PageResult<TResult>(paging, data);
+            } 
+            return new PageResult<TResult>(paging, source.Select(selector));
         }
 
         public static async Task<PageResult<TSource>> ToPagingAsync<TSource>(this IQueryable<TSource> source,

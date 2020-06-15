@@ -3,386 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading;
 
-namespace PaginationTests {
-    public static class DynamicQueryable {
-        public static IQueryable<T> Where<T>(this IQueryable<T> source, string predicate, params object[] values) {
-            return (IQueryable<T>)Where((IQueryable)source, predicate, values);
-        }
-
-        public static IQueryable Where(this IQueryable source, string predicate, params object[] values) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (predicate == null) throw new ArgumentNullException(nameof(predicate));
-            LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, typeof(bool), predicate, values);
-            return source.Provider.CreateQuery(
-                Expression.Call(
-                    typeof(Queryable), "Where",
-                    new Type[] { source.ElementType },
-                    source.Expression, Expression.Quote(lambda)));
-        }
-
-        public static IQueryable Select(this IQueryable source, string selector, params object[] values) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (selector == null) throw new ArgumentNullException(nameof(selector));
-            LambdaExpression lambda = DynamicExpression.ParseLambda(source.ElementType, null, selector, values);
-            return source.Provider.CreateQuery(
-                Expression.Call(
-                    typeof(Queryable), "Select",
-                    new Type[] { source.ElementType, lambda.Body.Type },
-                    source.Expression, Expression.Quote(lambda)));
-        }
-
-        public static IQueryable<T> DynamicOrderBy<T>(this IQueryable<T> source, string ordering, params object[] values) {
-            return (IQueryable<T>)DynamicOrderBy((IQueryable)source, ordering, values);
-        }
-
-        public static IQueryable DynamicOrderBy(this IQueryable source, string ordering, params object[] values) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (ordering == null) throw new ArgumentNullException(nameof(ordering));
-            ParameterExpression[] parameters = new ParameterExpression[] {
-                Expression.Parameter(source.ElementType, "") };
-            ExpressionParser parser = new ExpressionParser(parameters, ordering, values);
-            IEnumerable<DynamicOrdering> orderings = parser.ParseOrdering();
-            Expression queryExpr = source.Expression;
-            string methodAsc = "OrderBy";
-            string methodDesc = "OrderByDescending";
-            foreach (DynamicOrdering o in orderings) {
-                queryExpr = Expression.Call(
-                    typeof(Queryable), o.Ascending ? methodAsc : methodDesc,
-                    new Type[] { source.ElementType, o.Selector.Type },
-                    queryExpr, Expression.Quote(Expression.Lambda(o.Selector, parameters)));
-                methodAsc = "ThenBy";
-                methodDesc = "ThenByDescending";
-            }
-            return source.Provider.CreateQuery(queryExpr);
-        }
-
-        public static IQueryable Take(this IQueryable source, int count) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            return source.Provider.CreateQuery(
-                Expression.Call(
-                    typeof(Queryable), "Take",
-                    new Type[] { source.ElementType },
-                    source.Expression, Expression.Constant(count)));
-        }
-
-        public static IQueryable Skip(this IQueryable source, int count) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            return source.Provider.CreateQuery(
-                Expression.Call(
-                    typeof(Queryable), "Skip",
-                    new Type[] { source.ElementType },
-                    source.Expression, Expression.Constant(count)));
-        }
-
-        public static IQueryable GroupBy(this IQueryable source, string keySelector, string elementSelector, params object[] values) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (keySelector == null) throw new ArgumentNullException(nameof(keySelector));
-            if (elementSelector == null) throw new ArgumentNullException(nameof(elementSelector));
-            LambdaExpression keyLambda = DynamicExpression.ParseLambda(source.ElementType, null, keySelector, values);
-            LambdaExpression elementLambda = DynamicExpression.ParseLambda(source.ElementType, null, elementSelector, values);
-            return source.Provider.CreateQuery(
-                Expression.Call(
-                    typeof(Queryable), "GroupBy",
-                    new Type[] { source.ElementType, keyLambda.Body.Type, elementLambda.Body.Type },
-                    source.Expression, Expression.Quote(keyLambda), Expression.Quote(elementLambda)));
-        }
-
-        public static bool Any(this IQueryable source) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            return (bool)source.Provider.Execute(
-                Expression.Call(
-                    typeof(Queryable), "Any",
-                    new Type[] { source.ElementType }, source.Expression));
-        }
-
-        public static int Count(this IQueryable source) {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            return (int)source.Provider.Execute(
-                Expression.Call(
-                    typeof(Queryable), "Count",
-                    new Type[] { source.ElementType }, source.Expression));
-        }
-    }
-
-    public abstract class DynamicClass {
-        public override string ToString() {
-            PropertyInfo[] props = this.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
-            StringBuilder sb = new StringBuilder();
-            sb.Append("{");
-            for (int i = 0; i < props.Length; i++) {
-                if (i > 0) sb.Append(", ");
-                sb.Append(props[i].Name);
-                sb.Append("=");
-                sb.Append(props[i].GetValue(this, null));
-            }
-            sb.Append("}");
-            return sb.ToString();
-        }
-    }
-
-    public class DynamicProperty {
-        string name;
-        Type type;
-
-        public DynamicProperty(string name, Type type) {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            if (type == null) throw new ArgumentNullException(nameof(type));
-            this.name = name;
-            this.type = type;
-        }
-
-        public string Name {
-            get { return name; }
-        }
-
-        public Type Type {
-            get { return type; }
-        }
-    }
-
-    public static class DynamicExpression {
-        public static Expression Parse(Type resultType, string expression, params object[] values) {
-            ExpressionParser parser = new ExpressionParser(null, expression, values);
-            return parser.Parse(resultType);
-        }
-
-        public static LambdaExpression ParseLambda(Type itType, Type resultType, string expression, params object[] values) {
-            return ParseLambda(new ParameterExpression[] { Expression.Parameter(itType, "") }, resultType, expression, values);
-        }
-
-        public static LambdaExpression ParseLambda(ParameterExpression[] parameters, Type resultType, string expression, params object[] values) {
-            ExpressionParser parser = new ExpressionParser(parameters, expression, values);
-            return Expression.Lambda(parser.Parse(resultType), parameters);
-        }
-
-        public static Expression<Func<T, S>> ParseLambda<T, S>(string expression, params object[] values) {
-            return (Expression<Func<T, S>>)ParseLambda(typeof(T), typeof(S), expression, values);
-        }
-
-        public static Type CreateClass(params DynamicProperty[] properties) {
-            return ClassFactory.Instance.GetDynamicClass(properties);
-        }
-
-        public static Type CreateClass(IEnumerable<DynamicProperty> properties) {
-            return ClassFactory.Instance.GetDynamicClass(properties);
-        }
-    }
-
-    internal class DynamicOrdering {
-        public Expression Selector;
-        public bool Ascending;
-    }
-
-    internal class Signature : IEquatable<Signature> {
-        public DynamicProperty[] properties;
-        public int hashCode;
-
-        public Signature(IEnumerable<DynamicProperty> properties) {
-            this.properties = properties.ToArray();
-            hashCode = 0;
-            foreach (DynamicProperty p in properties) {
-                hashCode ^= p.Name.GetHashCode() ^ p.Type.GetHashCode();
-            }
-        }
-
-        public override int GetHashCode() {
-            return hashCode;
-        }
-
-        public override bool Equals(object obj) {
-            return obj is Signature ? Equals((Signature)obj) : false;
-        }
-
-        public bool Equals(Signature other) {
-            if (properties.Length != other.properties.Length) return false;
-            for (int i = 0; i < properties.Length; i++) {
-                if (properties[i].Name != other.properties[i].Name ||
-                    properties[i].Type != other.properties[i].Type) return false;
-            }
-            return true;
-        }
-    }
-
-    internal class ClassFactory {
-        public static readonly ClassFactory Instance = new ClassFactory();
-
-        static ClassFactory() { }  // Trigger lazy initialization of static fields 
-
-        ModuleBuilder module;
-        Dictionary<Signature, Type> classes;
-        int classCount;
-        ReaderWriterLock rwLock;
-
-        private ClassFactory() {
-            AssemblyName name = new AssemblyName("DynamicClasses");
-            AssemblyBuilder assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
-#if ENABLE_LINQ_PARTIAL_TRUST
-            new ReflectionPermission(PermissionState.Unrestricted).Assert(); 
-#endif
-            try {
-                module = assembly.DefineDynamicModule("Module");
-            } finally {
-#if ENABLE_LINQ_PARTIAL_TRUST
-                PermissionSet.RevertAssert(); 
-#endif
-            }
-            classes = new Dictionary<Signature, Type>();
-            rwLock = new ReaderWriterLock();
-        }
-
-        public Type GetDynamicClass(IEnumerable<DynamicProperty> properties) {
-            rwLock.AcquireReaderLock(Timeout.Infinite);
-            try {
-                Signature signature = new Signature(properties);
-                Type type;
-                if (!classes.TryGetValue(signature, out type)) {
-                    type = CreateDynamicClass(signature.properties);
-                    classes.Add(signature, type);
-                }
-                return type;
-            } finally {
-                rwLock.ReleaseReaderLock();
-            }
-        }
-
-        Type CreateDynamicClass(DynamicProperty[] properties) {
-            LockCookie cookie = rwLock.UpgradeToWriterLock(Timeout.Infinite);
-            try {
-                string typeName = "DynamicClass" + (classCount + 1);
-#if ENABLE_LINQ_PARTIAL_TRUST
-                new ReflectionPermission(PermissionState.Unrestricted).Assert(); 
-#endif
-                try {
-                    TypeBuilder tb = this.module.DefineType(typeName, TypeAttributes.Class |
-                        TypeAttributes.Public, typeof(DynamicClass));
-                    FieldInfo[] fields = GenerateProperties(tb, properties);
-                    GenerateEquals(tb, fields);
-                    GenerateGetHashCode(tb, fields);
-                    Type result = tb.CreateType();
-                    classCount++;
-                    return result;
-                } finally {
-#if ENABLE_LINQ_PARTIAL_TRUST
-                    PermissionSet.RevertAssert(); 
-#endif
-                }
-            } finally {
-                rwLock.DowngradeFromWriterLock(ref cookie);
-            }
-        }
-
-        FieldInfo[] GenerateProperties(TypeBuilder tb, DynamicProperty[] properties) {
-            FieldInfo[] fields = new FieldBuilder[properties.Length];
-            for (int i = 0; i < properties.Length; i++) {
-                DynamicProperty dp = properties[i];
-                FieldBuilder fb = tb.DefineField("_" + dp.Name, dp.Type, FieldAttributes.Private);
-                PropertyBuilder pb = tb.DefineProperty(dp.Name, PropertyAttributes.HasDefault, dp.Type, null);
-                MethodBuilder mbGet = tb.DefineMethod("get_" + dp.Name,
-                    MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
-                    dp.Type, Type.EmptyTypes);
-                ILGenerator genGet = mbGet.GetILGenerator();
-                genGet.Emit(OpCodes.Ldarg_0);
-                genGet.Emit(OpCodes.Ldfld, fb);
-                genGet.Emit(OpCodes.Ret);
-                MethodBuilder mbSet = tb.DefineMethod("set_" + dp.Name,
-                    MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig,
-                    null, new Type[] { dp.Type });
-                ILGenerator genSet = mbSet.GetILGenerator();
-                genSet.Emit(OpCodes.Ldarg_0);
-                genSet.Emit(OpCodes.Ldarg_1);
-                genSet.Emit(OpCodes.Stfld, fb);
-                genSet.Emit(OpCodes.Ret);
-                pb.SetGetMethod(mbGet);
-                pb.SetSetMethod(mbSet);
-                fields[i] = fb;
-            }
-            return fields;
-        }
-
-        void GenerateEquals(TypeBuilder tb, FieldInfo[] fields) {
-            MethodBuilder mb = tb.DefineMethod("Equals",
-                MethodAttributes.Public | MethodAttributes.ReuseSlot |
-                MethodAttributes.Virtual | MethodAttributes.HideBySig,
-                typeof(bool), new Type[] { typeof(object) });
-            ILGenerator gen = mb.GetILGenerator();
-            LocalBuilder other = gen.DeclareLocal(tb);
-            Label next = gen.DefineLabel();
-            gen.Emit(OpCodes.Ldarg_1);
-            gen.Emit(OpCodes.Isinst, tb);
-            gen.Emit(OpCodes.Stloc, other);
-            gen.Emit(OpCodes.Ldloc, other);
-            gen.Emit(OpCodes.Brtrue_S, next);
-            gen.Emit(OpCodes.Ldc_I4_0);
-            gen.Emit(OpCodes.Ret);
-            gen.MarkLabel(next);
-            foreach (FieldInfo field in fields) {
-                Type ft = field.FieldType;
-                Type ct = typeof(EqualityComparer<>).MakeGenericType(ft);
-                next = gen.DefineLabel();
-                gen.EmitCall(OpCodes.Call, ct.GetMethod("get_Default"), null);
-                gen.Emit(OpCodes.Ldarg_0);
-                gen.Emit(OpCodes.Ldfld, field);
-                gen.Emit(OpCodes.Ldloc, other);
-                gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("Equals", new Type[] { ft, ft }), null);
-                gen.Emit(OpCodes.Brtrue_S, next);
-                gen.Emit(OpCodes.Ldc_I4_0);
-                gen.Emit(OpCodes.Ret);
-                gen.MarkLabel(next);
-            }
-            gen.Emit(OpCodes.Ldc_I4_1);
-            gen.Emit(OpCodes.Ret);
-        }
-
-        void GenerateGetHashCode(TypeBuilder tb, FieldInfo[] fields) {
-            MethodBuilder mb = tb.DefineMethod("GetHashCode",
-                MethodAttributes.Public | MethodAttributes.ReuseSlot |
-                MethodAttributes.Virtual | MethodAttributes.HideBySig,
-                typeof(int), Type.EmptyTypes);
-            ILGenerator gen = mb.GetILGenerator();
-            gen.Emit(OpCodes.Ldc_I4_0);
-            foreach (FieldInfo field in fields) {
-                Type ft = field.FieldType;
-                Type ct = typeof(EqualityComparer<>).MakeGenericType(ft);
-                gen.EmitCall(OpCodes.Call, ct.GetMethod("get_Default"), null);
-                gen.Emit(OpCodes.Ldarg_0);
-                gen.Emit(OpCodes.Ldfld, field);
-                gen.EmitCall(OpCodes.Callvirt, ct.GetMethod("GetHashCode", new Type[] { ft }), null);
-                gen.Emit(OpCodes.Xor);
-            }
-            gen.Emit(OpCodes.Ret);
-        }
-    }
-
-    public sealed class ParseException : Exception {
-        int position;
-
-        public ParseException(string message, int position)
-            : base(message) {
-            this.position = position;
-        }
-
-        public int Position {
-            get { return position; }
-        }
-
-        public override string ToString() {
-            return string.Format(Res.ParseExceptionFormat, Message, position);
-        }
-    }
-
-    internal class ExpressionParser {
-        struct Token {
+namespace PaginationTests
+{
+   internal class ExpressionParser
+    {
+        struct Token
+        {
             public TokenId id;
             public string text;
             public int pos;
         }
 
-        enum TokenId {
+        enum TokenId
+        {
             Unknown,
             End,
             Identifier,
@@ -417,12 +51,14 @@ namespace PaginationTests {
             DoubleBar
         }
 
-        interface ILogicalSignatures {
+        interface ILogicalSignatures
+        {
             void F(bool x, bool y);
             void F(bool? x, bool? y);
         }
 
-        interface IArithmeticSignatures {
+        interface IArithmeticSignatures
+        {
             void F(int x, int y);
             void F(uint x, uint y);
             void F(long x, long y);
@@ -439,7 +75,8 @@ namespace PaginationTests {
             void F(decimal? x, decimal? y);
         }
 
-        interface IRelationalSignatures : IArithmeticSignatures {
+        interface IRelationalSignatures : IArithmeticSignatures
+        {
             void F(string x, string y);
             void F(char x, char y);
             void F(DateTime x, DateTime y);
@@ -449,24 +86,28 @@ namespace PaginationTests {
             void F(TimeSpan? x, TimeSpan? y);
         }
 
-        interface IEqualitySignatures : IRelationalSignatures {
+        interface IEqualitySignatures : IRelationalSignatures
+        {
             void F(bool x, bool y);
             void F(bool? x, bool? y);
         }
 
-        interface IAddSignatures : IArithmeticSignatures {
+        interface IAddSignatures : IArithmeticSignatures
+        {
             void F(DateTime x, TimeSpan y);
             void F(TimeSpan x, TimeSpan y);
             void F(DateTime? x, TimeSpan? y);
             void F(TimeSpan? x, TimeSpan? y);
         }
 
-        interface ISubtractSignatures : IAddSignatures {
+        interface ISubtractSignatures : IAddSignatures
+        {
             void F(DateTime x, DateTime y);
             void F(DateTime? x, DateTime? y);
         }
 
-        interface INegationSignatures {
+        interface INegationSignatures
+        {
             void F(int x);
             void F(long x);
             void F(float x);
@@ -479,12 +120,14 @@ namespace PaginationTests {
             void F(decimal? x);
         }
 
-        interface INotSignatures {
+        interface INotSignatures
+        {
             void F(bool x);
             void F(bool? x);
         }
 
-        interface IEnumerableSignatures {
+        interface IEnumerableSignatures
+        {
             void Where(bool predicate);
             void Any();
             void Any(bool predicate);
@@ -1342,7 +985,8 @@ namespace PaginationTests {
             }
         }
 
-        class MethodData {
+        class MethodData
+        {
             public MethodBase MethodBase;
             public ParameterInfo[] Parameters;
             public Expression[] Args;
@@ -1918,84 +1562,5 @@ namespace PaginationTests {
             return d;
         }
     }
-
-    static class Res {
-        public const string DuplicateIdentifier = "The identifier '{0}' was defined more than once";
-        public const string ExpressionTypeMismatch = "Expression of type '{0}' expected";
-        public const string ExpressionExpected = "Expression expected";
-        public const string InvalidCharacterLiteral = "Character literal must contain exactly one character";
-        public const string InvalidIntegerLiteral = "Invalid integer literal '{0}'";
-        public const string InvalidRealLiteral = "Invalid real literal '{0}'";
-        public const string UnknownIdentifier = "Unknown identifier '{0}'";
-        public const string NoItInScope = "No 'it' is in scope";
-        public const string IifRequiresThreeArgs = "The 'iif' function requires three arguments";
-        public const string FirstExprMustBeBool = "The first expression must be of type 'Boolean'";
-        public const string BothTypesConvertToOther = "Both of the types '{0}' and '{1}' convert to the other";
-        public const string NeitherTypeConvertsToOther = "Neither of the types '{0}' and '{1}' converts to the other";
-        public const string MissingAsClause = "Expression is missing an 'as' clause";
-        public const string ArgsIncompatibleWithLambda = "Argument list incompatible with lambda expression";
-        public const string TypeHasNoNullableForm = "Type '{0}' has no nullable form";
-        public const string NoMatchingConstructor = "No matching constructor in type '{0}'";
-        public const string AmbiguousConstructorInvocation = "Ambiguous invocation of '{0}' constructor";
-        public const string CannotConvertValue = "A value of type '{0}' cannot be converted to type '{1}'";
-        public const string NoApplicableMethod = "No applicable method '{0}' exists in type '{1}'";
-        public const string MethodsAreInaccessible = "Methods on type '{0}' are not accessible";
-        public const string MethodIsVoid = "Method '{0}' in type '{1}' does not return a value";
-        public const string AmbiguousMethodInvocation = "Ambiguous invocation of method '{0}' in type '{1}'";
-        public const string UnknownPropertyOrField = "No property or field '{0}' exists in type '{1}'";
-        public const string NoApplicableAggregate = "No applicable aggregate method '{0}' exists";
-        public const string CannotIndexMultiDimArray = "Indexing of multi-dimensional arrays is not supported";
-        public const string InvalidIndex = "Array index must be an integer expression";
-        public const string NoApplicableIndexer = "No applicable indexer exists in type '{0}'";
-        public const string AmbiguousIndexerInvocation = "Ambiguous invocation of indexer in type '{0}'";
-        public const string IncompatibleOperand = "Operator '{0}' incompatible with operand type '{1}'";
-        public const string IncompatibleOperands = "Operator '{0}' incompatible with operand types '{1}' and '{2}'";
-        public const string UnterminatedStringLiteral = "Unterminated string literal";
-        public const string InvalidCharacter = "Syntax error '{0}'";
-        public const string DigitExpected = "Digit expected";
-        public const string SyntaxError = "Syntax error";
-        public const string TokenExpected = "{0} expected";
-        public const string ParseExceptionFormat = "{0} (at index {1})";
-        public const string ColonExpected = "':' expected";
-        public const string OpenParenExpected = "'(' expected";
-        public const string CloseParenOrOperatorExpected = "')' or operator expected";
-        public const string CloseParenOrCommaExpected = "')' or ',' expected";
-        public const string DotOrOpenParenExpected = "'.' or '(' expected";
-        public const string OpenBracketExpected = "'[' expected";
-        public const string CloseBracketOrCommaExpected = "']' or ',' expected";
-        public const string IdentifierExpected = "Identifier expected";
-    }
 } 
  
-/* Test Code 
-namespace Dynamic 
-{ 
-    class Program 
-    { 
-        static void Main(string[] args) 
-        { 
-            // For this sample to work, you need an active database server or SqlExpress. 
-            // Here is a connection to the Data sample project that ships with Microsoft Visual Studio 2008. 
-            string dbPath = Path.GetFullPath(Path.Combine(Application.StartupPath, @"..\..\..\..\Data\NORTHWND.MDF")); 
-            string sqlServerInstance = @".\SQLEXPRESS"; 
-            string connString = "AttachDBFileName='" + dbPath + "';Server='" + sqlServerInstance + "';user instance=true;Integrated Security=SSPI;Connection Timeout=60"; 
- 
-            // Here is an alternate connect string that you can modify for your own purposes. 
-            // string connString = "server=test;database=northwind;user id=test;password=test"; 
- 
-            Northwind db = new Northwind(connString); 
-            db.Log = Console.Out; 
- 
-            var query = 
-                db.Customers.Where("City == @0 and Orders.Count >= @1", "London", 10). 
-                OrderBy("CompanyName"). 
-                Select("New(CompanyName as Name, Phone)"); 
- 
-            Console.WriteLine(query); 
-            Console.ReadLine(); 
-        } 
-    } 
-} 
- 
-*/
-}
