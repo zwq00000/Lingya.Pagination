@@ -11,7 +11,7 @@ namespace Lingya.Pagination.Tests {
         private readonly IEnumerable<User> _users;
 
         public TestPagination () {
-            _users = CreateMockData();
+            _users = CreateMockData ();
         }
 
         private static IEnumerable<User> CreateMockData (int count = 100) {

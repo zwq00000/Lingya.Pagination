@@ -1,8 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Lingya.Pagination.Tests.Mock
-{
+namespace Lingya.Pagination.Tests.Mock {
     public class Account {
         [Key]
         [DatabaseGenerated (DatabaseGeneratedOption.Identity)]

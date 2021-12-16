@@ -13,7 +13,7 @@ namespace Lingya.Pagination.Tests {
 
         [Fact]
         public void TestExperssion () {
-            var users = Array.Empty<User>();
+            var users = Array.Empty<User> ();
 
             var query = users.AsQueryable (); //CreateTestQuery(users.AsQueryable());
             Assert.NotNull (query.Expression);

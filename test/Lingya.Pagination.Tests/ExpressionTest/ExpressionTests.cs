@@ -5,58 +5,37 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Lingya.Pagination.Tests.Mock;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Lingya.Pagination.Tests.ExpressionTest {
     public class ExpressionTests {
-        private ITestOutputHelper _output;
+        private readonly ITestOutputHelper output;
 
         private readonly IQueryable<User> UserQuery;
-        private IList<User> users = new List<User> {
-            new User ("user1", "User 1")
-        };
 
-        private void InitMockData (int count) {
-            for (int i = 0; i < count; i++) {
-                users.Add (new User ($"user_{i}", $"UserName {i}"));
-            }
-        }
-
-        public ExpressionTests (Xunit.Abstractions.ITestOutputHelper outputHelper) {
-            this._output = outputHelper;
-            //InitMockData (100);
-            var context = Mock.TestDbContext.UseInMemory ();
+        public ExpressionTests (ITestOutputHelper outputHelper) {
+            this.output = outputHelper;
+            var context = TestDbContext.UseSqlite ();
             UserQuery = context.Users;
         }
 
         [Fact]
         public void TestContainsExpression () {
-            //var query = users.AsQueryable ();
             var query = UserQuery;
-            // var exp = ExpressionExtensions.ToContainsExpression<User> (u => u.FullName, Expression.MakeMemberAccess(typeof(User),"u"), "1");
-            // Assert.NotNull (exp);
-            // _output.WriteLine (exp.ToString ());
-            // query = query.Where(exp);
-            // Assert.NotEmpty (query);
-            // Assert.Equal (10,query.Count());
-
-            // var searchKey = "1";
-            // //Expression.Bind()
-            // Expression.Variable (typeof (string));
-            // exp = ExpressionExtensions.ToContainsExpression<User> (u => u.FullName, Expression.Variable (typeof (string), nameof (searchKey)));
-            // Assert.NotNull (exp);
-            // _output.WriteLine (exp.ToString ());
-            // Xunit.Assert.NotEmpty (query.Where (exp));
+            var result = query.Contains ("1", u => u.UserName, u => u.FullName);
+            output.WriteLine (result.ToQueryString ());
+            Assert.NotEmpty (result);
         }
 
         [Fact]
         public void TestContains () {
             var key = "1";
-            Expression<Func<User, bool>> exp = u => (u.FullName!=null && u.FullName.Contains (key) || (u.DepName!=null && u.DepName.StartsWith(key)));
-            _output.WriteLine (exp.ToString ());
+            Expression<Func<User, bool>> exp = u => (u.FullName != null && u.FullName.Contains (key) || (u.DepName != null && u.DepName.StartsWith (key)));
+            output.WriteLine (exp.ToString ());
 
-            _output.WriteLine (exp.Body.ToString ());
+            output.WriteLine (exp.Body.ToString ());
         }
 
         [Fact]
@@ -65,7 +44,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             Expression<Func<User, bool>> exp2 = u => u.FullName.Contains ("2");
             Expression<Func<User, bool>> exp3 = u => u.FullName.Contains ("3");
             var result = exp1.Or (exp2, exp3);
-            _output.WriteLine (result.ToString ());
+            output.WriteLine (result.ToString ());
 
             var parameter = Expression.Parameter (typeof (User), "u");
             result = new ParameterReplacer (parameter).Visit (result);
@@ -89,7 +68,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
         public void TestGetWhereExpression () {
             var exp = UserQuery.GetWhereExpression ("1", ExpressionExtensions.StringContainsMethod, u => u.FullName, u => u.DepName);
             Assert.NotNull (exp);
-            _output.WriteLine (exp.ToString ());
+            output.WriteLine (exp.ToString ());
             var query = UserQuery.Provider.CreateQuery (exp);
             Assert.NotEmpty (query);
         }
@@ -128,15 +107,15 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             //生成 .where(u=>...) 方法调用表达式
             return Expression.Call (
                 typeof (Queryable), nameof (Queryable.Where),
-                new Type[] { source.ElementType},
-                source.Expression,whereExpression);
+                new Type[] { source.ElementType },
+                source.Expression, whereExpression);
         }
 
         public static IQueryable<TSource> Contains<TSource> (this IQueryable<TSource> query,
             string searchKey,
             Expression<Func<TSource, string>> containsMember,
             params Expression<Func<TSource, string>>[] containsMembers) {
-            var method = StringStartsWithMethod;
+            var method = StringContainsMethod;
             var parameter = GetParameterExpression (containsMember);
             var logics = containsMember.ToSearchLambda (method, searchKey).
             Or (containsMembers.Select (e => e.ToSearchLambda (method, searchKey)).ToArray ());
@@ -178,10 +157,10 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             var memberAccess = GetMemberExpression (containsMember);
             var leftParameter = GetParameterExpression (memberAccess);
             var constant = Expression.Constant (searchKey);
-            var nullConstant = Expression.Constant(null);
-            var notNullExp = Expression.ReferenceNotEqual(memberAccess,nullConstant);
+            var nullConstant = Expression.Constant (null);
+            var notNullExp = Expression.ReferenceNotEqual (memberAccess, nullConstant);
             return Expression.Lambda<Func<TSource, bool>> (
-                Expression.AndAlso(notNullExp,Expression.Call (memberAccess, method, constant)), false, leftParameter);
+                Expression.AndAlso (notNullExp, Expression.Call (memberAccess, method, constant)), false, leftParameter);
         }
 
         private static Expression<Func<TSource, bool>> ToContainsExpression<TSource> (this Expression<Func<TSource, string>> containsMember, string searchKey) {
@@ -220,7 +199,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             var exp = (Expression) expression.Body;
 
             foreach (var item in others) {
-                exp = Expression.OrElse (exp,item.Body);
+                exp = Expression.OrElse (exp, item.Body);
                 //((MemberExpression)((MethodCallExpression) item.Body).Object).Expression = expression.Parameters[0];
             }
             return exp;
