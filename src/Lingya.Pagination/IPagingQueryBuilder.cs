@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Lingya.Pagination {
     public interface IPagingQueryBuilder<TSource> {
+        IQueryable<TSource> Query { get; }
 
         /// <summary>
         /// 增加 使用 <see cref="String.Contains(string)" /> 搜索的过滤属性
