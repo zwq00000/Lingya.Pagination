@@ -1,4 +1,4 @@
-namespace PaginationTests {
+namespace Lingya.Pagination.Tests {
     static class Res {
         public const string DuplicateIdentifier = "The identifier '{0}' was defined more than once";
         public const string ExpressionTypeMismatch = "Expression of type '{0}' expected";

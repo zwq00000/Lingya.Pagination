@@ -1,6 +1,6 @@
 using System;
 
-namespace PaginationTests
+namespace Lingya.Pagination.Tests
 {
     public sealed class ParseException : Exception {
         int position;

@@ -22,7 +22,7 @@
       return await context.WeatherForecasts
                 .PagingBuilder (parameter)
                 .StartsFor (w => w.Summary)
-                .ToPagingAsync ();;
+                .ToPagingAsync ();
     ```
     - support Microsoft.EntityFrameworkCore 3.1.*
 

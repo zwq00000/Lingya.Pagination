@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text;
 
-namespace PaginationTests
+namespace Lingya.Pagination.Tests
 {
     public abstract class DynamicClass {
         public override string ToString() {

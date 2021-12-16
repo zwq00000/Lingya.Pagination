@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace PaginationTests.Mock {
+namespace Lingya.Pagination.Tests.Mock {
     public class User {
         static int globalId = 0;
         public User () { }

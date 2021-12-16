@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace PaginationTests {
+namespace Lingya.Pagination.Tests {
     public static class DynamicExpression {
         public static Expression Parse (Type resultType, string expression, params object[] values) {
             ExpressionParser parser = new ExpressionParser (null, expression, values);

@@ -79,10 +79,6 @@ namespace Lingya.Pagination {
             return new PageResult<T> (paging, source);
         }
 
-        private static IEnumerable<T> ToPage<T> (this IQueryable<T> source, Paging page) {
-            return source.Skip (page.Skip).Take (page.PageSize).ToArray ();
-        }
-
         private static Paging CreatePaging<T> (this IQueryable<T> source, int? pageSize, int? pageNumber) {
             var count = source.Count ();
             return new Paging (count, pageSize, pageNumber);
