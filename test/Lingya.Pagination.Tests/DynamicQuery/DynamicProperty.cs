@@ -1,16 +1,14 @@
 using System;
 
-namespace PaginationTests
+namespace Lingya.Pagination.Tests
 {
     public class DynamicProperty {
         string name;
         Type type;
 
         public DynamicProperty(string name, Type type) {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            if (type == null) throw new ArgumentNullException(nameof(type));
-            this.name = name;
-            this.type = type;
+            this.name = name ?? throw new ArgumentNullException(nameof(name));
+            this.type = type ?? throw new ArgumentNullException(nameof(type));
         }
 
         public string Name {

@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 
-namespace PaginationTests
+namespace Lingya.Pagination.Tests
 {
     internal class ClassFactory {
         public static readonly ClassFactory Instance = new ClassFactory();

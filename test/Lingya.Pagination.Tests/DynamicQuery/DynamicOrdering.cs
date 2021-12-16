@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace PaginationTests {
+namespace Lingya.Pagination.Tests {
     internal class DynamicOrdering {
         public Expression Selector;
         public bool Ascending;

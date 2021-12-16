@@ -1,11 +1,28 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace Lingya.Pagination {
     public interface IPagingQueryBuilder<TSource> {
+        /// <summary>
+        /// 查询对象
+        /// </summary>
+        /// <value></value>
         IQueryable<TSource> Query { get; }
+
+        /// <summary>
+        /// 分页参数
+        /// </summary>
+        /// <value></value>
+        PageParameter Parameter { get; }
+
+        /// <summary>
+        /// 新增过滤条件
+        /// </summary>
+        /// <param name="predicate"></param>
+        void Filter (Expression<Func<TSource, bool>> predicate);
 
         /// <summary>
         /// 增加 使用 <see cref="String.Contains(string)" /> 搜索的过滤属性
@@ -14,6 +31,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
+        [Obsolete ("使用 Search 扩展方法")]
         IPagingQueryBuilder<TSource> ContainsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
@@ -23,6 +41,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
+        [Obsolete ("使用 Search 扩展方法")]
         IPagingQueryBuilder<TSource> StartsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
@@ -32,6 +51,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
+        [Obsolete ("使用 Search 扩展方法")]
         IPagingQueryBuilder<TSource> EndsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>

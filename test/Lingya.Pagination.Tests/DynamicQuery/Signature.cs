@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace PaginationTests
+namespace Lingya.Pagination.Tests
 {
 
     internal class Signature : IEquatable<Signature> {

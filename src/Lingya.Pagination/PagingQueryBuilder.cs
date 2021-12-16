@@ -4,24 +4,20 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace Lingya.Pagination
-{
+namespace Lingya.Pagination {
 
     internal class PagingQueryBuilder<TSource> : IPagingQueryBuilder<TSource> {
         private IQueryable<TSource> _query;
         private readonly PageParameter parameter;
 
-        private IList<Expression> whereExpression;
-
         public PagingQueryBuilder (IQueryable<TSource> queryable, PageParameter parameter) {
             this._query = queryable;
             this.parameter = parameter;
-            if (parameter.HasSearchKey ()) {
-                whereExpression = new List<Expression> ();
-            }
         }
 
         public IQueryable<TSource> Query => _query;
+
+        public PageParameter Parameter => parameter;
 
         public IPagingQueryBuilder<TSource> ContainsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
             if (!parameter.HasSearchKey ()) {
@@ -65,8 +61,10 @@ namespace Lingya.Pagination
         public async Task<PageResult<TResult>> ToPagingAsync<TResult> (Expression<Func<TSource, TResult>> selector) {
             return await this._query.ToPagingAsync (this.parameter, selector);
         }
-    }
 
-    
+        public void Filter (Expression<Func<TSource, bool>> predicate) {
+            this._query = _query.Where (predicate);
+        }
+    }
 
 }

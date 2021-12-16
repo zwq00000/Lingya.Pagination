@@ -38,7 +38,8 @@ namespace Samples.Controllers {
                     Date = DateTime.Now.AddDays (index),
                         TemperatureC = rng.Next (-20, 55),
                         Summary = Summaries[rng.Next (Summaries.Length)]
-                }).AsQueryable ().PagingBuilder (parameter).StartsFor (w => w.Summary)
+                }).AsQueryable ()
+                .PagingBuilder (parameter).Search (opt => opt.StartsFor (w => w.Summary))
                 .ToPaging ();;
         }
 
@@ -46,7 +47,7 @@ namespace Samples.Controllers {
         public async Task<PageResult<WeatherForecast>> GetForPageAsync ([FromQuery] PageParameter parameter) {
             return await context.WeatherForecasts
                 .PagingBuilder (parameter)
-                .StartsFor (w => w.Summary)
+                .Search (opt => opt.StartsFor (w => w.Summary))
                 .ToPagingAsync ();;
         }
 
@@ -57,10 +58,10 @@ namespace Samples.Controllers {
 
         [HttpPost ()]
         public async Task<ActionResult> Create ([FromForm] WeatherForecast weather) {
-            ModelState.Remove(nameof(weather.Id));
+            ModelState.Remove (nameof (weather.Id));
             if (this.ModelState.IsValid) {
-                if(weather.Id!=0){
-                    return BadRequest($"weather id = {weather.Id}");
+                if (weather.Id != 0) {
+                    return BadRequest ($"weather id = {weather.Id}");
                 }
                 //weather.Id = 0;
                 await context.WeatherForecasts.AddAsync (weather);
@@ -71,10 +72,10 @@ namespace Samples.Controllers {
         }
 
         [HttpPut ("{id}")]
-        public async Task<ActionResult> Update (int id,WeatherForecast weather) {
+        public async Task<ActionResult> Update (int id, WeatherForecast weather) {
             if (this.ModelState.IsValid) {
-                if(id!= weather.Id){
-                    return BadRequest();
+                if (id != weather.Id) {
+                    return BadRequest ();
                 }
                 // var entity = await context.WeatherForecasts.FindAsync(id);
                 // if(entity == null){
@@ -82,7 +83,7 @@ namespace Samples.Controllers {
                 // }
                 //context.Entry(entity).
                 //weather.Id = 0;
-                context.WeatherForecasts.Update(weather);
+                context.WeatherForecasts.Update (weather);
                 await context.SaveChangesAsync ();
                 return AcceptedAtAction (nameof (GetById), new { id = weather.Id }, weather);
             }

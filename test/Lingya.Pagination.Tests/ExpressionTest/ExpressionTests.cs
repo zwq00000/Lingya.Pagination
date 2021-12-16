@@ -4,11 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using PaginationTests.Mock;
+using Lingya.Pagination.Tests.Mock;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace PaginationTests.ExpressionTest {
+namespace Lingya.Pagination.Tests.ExpressionTest {
     public class ExpressionTests {
         private ITestOutputHelper _output;
 
@@ -26,7 +26,7 @@ namespace PaginationTests.ExpressionTest {
         public ExpressionTests (Xunit.Abstractions.ITestOutputHelper outputHelper) {
             this._output = outputHelper;
             //InitMockData (100);
-            var context = Mock.TestDbContext.GetMock ();
+            var context = Mock.TestDbContext.UseInMemory ();
             UserQuery = context.Users;
         }
 

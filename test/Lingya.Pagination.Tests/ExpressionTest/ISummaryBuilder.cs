@@ -8,7 +8,7 @@ namespace Lingya.Pagination {
     internal interface ISummaryBuilder<TSource> {
         ISummaryBuilder<TSource> Add (string name, int value);
 
-        void Summary (Expression<Func<TSource, int>> exp);
+        ISummaryBuilder<TSource> Sum (Expression<Func<TSource, int>> exp);
     }
 
     internal class SummaryBuilder<TSource> : ISummaryBuilder<TSource> {
@@ -47,26 +47,27 @@ namespace Lingya.Pagination {
             /// <value></value>
             public Expression Expression { get; set; }
         }
-        private ISet<SummaryExpression> summaryMap = new HashSet<SummaryExpression>();
+        private ISet<SummaryExpression> summaryMap = new HashSet<SummaryExpression> ();
         public ISummaryBuilder<TSource> Add (string name, int value) {
             throw new NotImplementedException ();
         }
 
         public ISummaryBuilder<TSource> Sum (Expression<Func<TSource, int>> selector) {
             var name = selector.Name;
-            var exp = new SummaryExpression(){
+            IQueryable<TSource> source = null;
+            var exp = new SummaryExpression () {
                 Name = name,
                 ValueType = ValueTypes.INT,
                 Method = AggMethods.Sum,
                 Expression = Expression.Call (null,
                 GetMethodInfo (
-                    new Func<IQueryable<TSource>, Expression<Func<TSource, long?>>, long? > (
-                        Queryable.Sum), source, selector), new Expression[] {
-                    source.Expression,
-                        Expression.Quote (selector)
+                new Func<IQueryable<TSource>, Expression<Func<TSource, int>>, int > (
+                Queryable.Sum), source, selector), new Expression[] {
+                source.Expression,
+                Expression.Quote (selector)
                 })
             };
-            this.summaryMap.Add(exp);
+            this.summaryMap.Add (exp);
 
             return this;
         }
@@ -80,7 +81,7 @@ namespace Lingya.Pagination {
                     source.Expression,
                         Expression.Quote (selector)
                 });
-
+            return null;
         }
 
         private static MethodInfo GetMethodInfo<T1, T2> (Func<T1, T2> f, T1 unused1) {
@@ -93,7 +94,7 @@ namespace Lingya.Pagination {
 
     internal static class SummaryBuilderExtensions {
 
-     /// <summary>
+        /// <summary>
         /// 生成 .where(u=>...) 方法调用表达式
         /// </summary>
         /// <param name="source"></param>
@@ -119,6 +120,26 @@ namespace Lingya.Pagination {
             var notNullExp = Expression.ReferenceNotEqual (memberAccess, nullConstant);
             return Expression.Lambda<Func<TSource, bool>> (
                 Expression.AndAlso (notNullExp, Expression.Call (memberAccess, method, constant)), false, leftParameter);
+        }
+
+        /// <summary>
+        /// 搜索表达式树,查找并返回 参数表达式
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        public static ParameterExpression GetParameterExpression (Expression expression) {
+            switch (expression) {
+                case LambdaExpression lambda:
+                    return GetParameterExpression (lambda.Body);
+                case MemberExpression member:
+                    return GetParameterExpression (member.Expression);
+                case ParameterExpression parameter:
+                    return parameter;
+                case MethodCallExpression callExpression:
+                    return GetParameterExpression (callExpression.Object);
+                default:
+                    throw new NotSupportedException ($"不支持的表达式类型:{expression.NodeType}\n表达式:{expression}");
+            }
         }
     }
 

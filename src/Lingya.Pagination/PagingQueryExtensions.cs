@@ -22,17 +22,14 @@ namespace Lingya.Pagination {
                 _parameter = parameter;
             }
         }
-        private static readonly MethodInfo StringContainsMethod = typeof (string).GetMethod (nameof (string.Contains), new Type[] { typeof (string) });
-        private static readonly MethodInfo StringStartsWithMethod = typeof (string).GetMethod (nameof (string.StartsWith), new Type[] { typeof (string) });
-        private static readonly MethodInfo StringEndsWithMethod = typeof (string).GetMethod (nameof (string.EndsWith), new Type[] { typeof (string) });
+        internal static readonly MethodInfo StringContainsMethod = typeof (string).GetMethod (nameof (string.Contains), new Type[] { typeof (string) });
+        internal static readonly MethodInfo StringStartsWithMethod = typeof (string).GetMethod (nameof (string.StartsWith), new Type[] { typeof (string) });
+        internal static readonly MethodInfo StringEndsWithMethod = typeof (string).GetMethod (nameof (string.EndsWith), new Type[] { typeof (string) });
 
         public static IQueryable<TSource> Contains<TSource> (this IQueryable<TSource> query,
             string searchKey,
             Expression<Func<TSource, string>> member,
             params Expression<Func<TSource, string>>[] others) {
-            if (string.IsNullOrEmpty (searchKey)) {
-                return query;
-            }
             var method = StringContainsMethod;
             return query.BuildSearchQuery (searchKey, method, member, others);
         }
@@ -41,9 +38,6 @@ namespace Lingya.Pagination {
             string searchKey,
             Expression<Func<TSource, string>> member,
             params Expression<Func<TSource, string>>[] others) {
-            if (string.IsNullOrEmpty (searchKey)) {
-                return query;
-            }
             var method = StringStartsWithMethod;
             return query.BuildSearchQuery (searchKey, method, member, others);
         }
@@ -52,9 +46,6 @@ namespace Lingya.Pagination {
             string searchKey,
             Expression<Func<TSource, string>> member,
             params Expression<Func<TSource, string>>[] others) {
-            if (string.IsNullOrEmpty (searchKey)) {
-                return query;
-            }
             return query.BuildSearchQuery (searchKey, StringEndsWithMethod, member, others);
         }
 
@@ -65,7 +56,7 @@ namespace Lingya.Pagination {
         /// <param name="whereExpression"></param>
         /// <typeparam name="TSource"></typeparam>
         /// <returns></returns>
-        public static MethodCallExpression MakeWhereExpression<TSource> (this IQueryable<TSource> source,
+        private static MethodCallExpression MakeWhereExpression<TSource> (this IQueryable<TSource> source,
             Expression<Func<TSource, bool>> whereExpression) {
             //生成 .where(u=>...) 方法调用表达式
             return Expression.Call (
@@ -88,7 +79,7 @@ namespace Lingya.Pagination {
             return query.Where (expression);
         }
 
-        private static Expression<Func<TSource, bool>> ToSearchLambda<TSource> (this Expression<Func<TSource, string>> expression,
+        public static Expression<Func<TSource, bool>> ToSearchLambda<TSource> (this Expression<Func<TSource, string>> expression,
             MethodInfo method,
             string searchKey) {
             var memberAccess = expression.Body;
@@ -136,7 +127,8 @@ namespace Lingya.Pagination {
         public static ParameterExpression GetParameterExpression (Expression expression) {
             switch (expression) {
                 case LambdaExpression lambda:
-                    return GetParameterExpression (lambda.Body);
+                    // return GetParameterExpression (lambda.Body);
+                    return lambda.Parameters.First();
                 case MemberExpression member:
                     return GetParameterExpression (member.Expression);
                 case ParameterExpression parameter:

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace PaginationTests
+namespace Lingya.Pagination.Tests
 {
     public static class DynamicQueryable {
         public static IQueryable<T> Where<T>(this IQueryable<T> source, string predicate, params object[] values) {
