@@ -8,13 +8,13 @@ using Xunit;
 namespace Lingya.Pagination.Tests {
     public class TestPagination {
 
-        private IEnumerable<User> _users;
+        private readonly IEnumerable<User> _users;
 
         public TestPagination () {
-            _users = CreateMockData ();
+            _users = CreateMockData();
         }
 
-        private IEnumerable<User> CreateMockData (int count = 100) {
+        private static IEnumerable<User> CreateMockData (int count = 100) {
             for (int i = 0; i < count; i++) {
                 yield return new User () { UserName = $"name_{i}", FullName = $"Full Name {i % 10}", CreatedDate = DateTime.Now.AddDays (-i) };
             }

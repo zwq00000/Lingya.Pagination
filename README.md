@@ -28,14 +28,28 @@ public async Task<IActionResult> Index([FromQuery] PageParameter paramete = null
 ```c#
 [HttpGet()]
 [ProducesResponseType(statusCode: 200, type: typeof(PageResult<Use>))]
+public async Task<ActionResult<PageResult<User>>> Index([FromQuery] PageParameter paramete = null) {
+  return await context.Users.AsQueryable ()
+              .PagingBuilder (parameter)
+              .Search (opt => opt.ContainsFor (u => u.FullName, u => u.UserName))
+              .ToPagingAsync ();
+}
+```
+
+### 1.3 聚合方法
+生成 分页结果时同时生成 聚合结果
+
+```c#
+[HttpGet()]
+[ProducesResponseType(statusCode: 200, type: typeof(PageResult<Account,Summary>))]
 public async Task<IActionResult> Index([FromQuery] PageParameter paramete = null) {
-    if(paramete!=null || String.IsNullOrEmpty(paramete.SearchKey)){
-      var query = context.Users.Where(u=>u.UserName.StartWith(parame.SearchKey));
-      return Ok(await query.ToPagingAsync(paramete));
-    }else{
-      var query = context.Users;
-      return Ok(await query.ToPagingAsync(paramete));
-    }
+  return await context.Account.AsNoTracking()
+              .PagingBuilder (parameter)
+              .WithAggregateAsync (g => new Summary(){
+                Count = g.Count (),
+                Quantity = g.Sum (a => a.Quantity),
+                Price = g.Sum (a => a.Price)
+            });
 }
 ```
 
