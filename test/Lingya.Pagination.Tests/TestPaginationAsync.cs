@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Lingya.Pagination;
+using Lingya.Pagination.Tests.Mock;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Lingya.Pagination.Tests.Mock;
 using Xunit;
 
 namespace Lingya.Pagination.Tests {
@@ -14,19 +14,6 @@ namespace Lingya.Pagination.Tests {
 
         public TestPaginationAsync () {
             _context = TestDbContext.UseInMemory ();
-        }
-
-        private void InitDatabase () {
-            if (!_context.Users.Any ()) {
-                _context.Users.AddRange (CreateMockData ().ToArray ());
-                _context.SaveChanges ();
-            }
-        }
-
-        private static IEnumerable<User> CreateMockData (int count = 100) {
-            for (int i = 0; i < count; i++) {
-                yield return new User () { UserName = $"name_{i}", FullName = $"Full Name {i % 10}", CreatedDate = DateTime.Now.AddDays (-i) };
-            }
         }
 
         [Fact]

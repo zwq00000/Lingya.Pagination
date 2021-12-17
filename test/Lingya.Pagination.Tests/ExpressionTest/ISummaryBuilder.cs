@@ -47,7 +47,7 @@ namespace Lingya.Pagination {
             /// <value></value>
             public Expression Expression { get; set; }
         }
-        private ISet<SummaryExpression> summaryMap = new HashSet<SummaryExpression> ();
+        private readonly ISet<SummaryExpression> summaryMap = new HashSet<SummaryExpression> ();
         public ISummaryBuilder<TSource> Add (string name, int value) {
             throw new NotImplementedException ();
         }
@@ -72,7 +72,7 @@ namespace Lingya.Pagination {
             return this;
         }
 
-        public IDictionary<string, object> Build (IQueryable<TSource> source, Expression<Func<TSource, long?>> selector) {
+        public static IDictionary<string, object> Build (IQueryable<TSource> source, Expression<Func<TSource, long?>> selector) {
             // source.Sum(t=>t.GetHashCode());
             var sum = Expression.Call (null,
                 GetMethodInfo (
@@ -84,9 +84,6 @@ namespace Lingya.Pagination {
             return null;
         }
 
-        private static MethodInfo GetMethodInfo<T1, T2> (Func<T1, T2> f, T1 unused1) {
-            return f.Method;
-        }
         private static MethodInfo GetMethodInfo<T1, T2, T3> (Func<T1, T2, T3> f, T1 unused1, T2 unused2) {
             return f.Method;
         }

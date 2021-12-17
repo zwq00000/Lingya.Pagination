@@ -1,14 +1,15 @@
 using System;
 
-namespace Lingya.Pagination.Tests
-{
+namespace Lingya.Pagination.Tests {
     public class DynamicProperty {
-        string name;
-        Type type;
+        private readonly string name;
+        private readonly Type type;
 
-        public DynamicProperty(string name, Type type) {
-            this.name = name ?? throw new ArgumentNullException(nameof(name));
-            this.type = type ?? throw new ArgumentNullException(nameof(type));
+        public DynamicProperty (string name, Type type) {
+            this.name = name ??
+                throw new ArgumentNullException (nameof (name));
+            this.type = type ??
+                throw new ArgumentNullException (nameof (type));
         }
 
         public string Name {
@@ -19,4 +20,4 @@ namespace Lingya.Pagination.Tests
             get { return type; }
         }
     }
-} 
+}

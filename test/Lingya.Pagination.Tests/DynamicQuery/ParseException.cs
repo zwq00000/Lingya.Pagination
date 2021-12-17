@@ -1,12 +1,10 @@
 using System;
 
-namespace Lingya.Pagination.Tests
-{
+namespace Lingya.Pagination.Tests {
     public sealed class ParseException : Exception {
-        int position;
+        private readonly int position;
 
-        public ParseException(string message, int position)
-            : base(message) {
+        public ParseException (string message, int position) : base (message) {
             this.position = position;
         }
 
@@ -14,8 +12,8 @@ namespace Lingya.Pagination.Tests
             get { return position; }
         }
 
-        public override string ToString() {
-            return string.Format(Res.ParseExceptionFormat, Message, position);
+        public override string ToString () {
+            return string.Format (Res.ParseExceptionFormat, Message, position);
         }
     }
-} 
+}

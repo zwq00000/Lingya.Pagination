@@ -10,20 +10,11 @@ using Xunit.Abstractions;
 
 namespace Lingya.Pagination.Tests.ExpressionTest {
     public class ExpressionTests {
-        private ITestOutputHelper _output;
+        private readonly ITestOutputHelper _output;
 
         private readonly IQueryable<User> UserQuery;
-        private IList<User> users = new List<User> {
-            new User ("user1", "User 1")
-        };
 
-        private void InitMockData (int count) {
-            for (int i = 0; i < count; i++) {
-                users.Add (new User ($"user_{i}", $"UserName {i}"));
-            }
-        }
-
-        public ExpressionTests (Xunit.Abstractions.ITestOutputHelper outputHelper) {
+        public ExpressionTests (ITestOutputHelper outputHelper) {
             this._output = outputHelper;
             //InitMockData (100);
             var context = Mock.TestDbContext.UseInMemory ();
@@ -53,7 +44,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
         [Fact]
         public void TestContains () {
             var key = "1";
-            Expression<Func<User, bool>> exp = u => (u.FullName!=null && u.FullName.Contains (key) || (u.DepName!=null && u.DepName.StartsWith(key)));
+            Expression<Func<User, bool>> exp = u => (u.FullName != null && u.FullName.Contains (key) || (u.DepName != null && u.DepName.StartsWith (key)));
             _output.WriteLine (exp.ToString ());
 
             _output.WriteLine (exp.Body.ToString ());
@@ -128,8 +119,8 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             //生成 .where(u=>...) 方法调用表达式
             return Expression.Call (
                 typeof (Queryable), nameof (Queryable.Where),
-                new Type[] { source.ElementType},
-                source.Expression,whereExpression);
+                new Type[] { source.ElementType },
+                source.Expression, whereExpression);
         }
 
         public static IQueryable<TSource> Contains<TSource> (this IQueryable<TSource> query,
@@ -178,10 +169,10 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             var memberAccess = GetMemberExpression (containsMember);
             var leftParameter = GetParameterExpression (memberAccess);
             var constant = Expression.Constant (searchKey);
-            var nullConstant = Expression.Constant(null);
-            var notNullExp = Expression.ReferenceNotEqual(memberAccess,nullConstant);
+            var nullConstant = Expression.Constant (null);
+            var notNullExp = Expression.ReferenceNotEqual (memberAccess, nullConstant);
             return Expression.Lambda<Func<TSource, bool>> (
-                Expression.AndAlso(notNullExp,Expression.Call (memberAccess, method, constant)), false, leftParameter);
+                Expression.AndAlso (notNullExp, Expression.Call (memberAccess, method, constant)), false, leftParameter);
         }
 
         private static Expression<Func<TSource, bool>> ToContainsExpression<TSource> (this Expression<Func<TSource, string>> containsMember, string searchKey) {
@@ -220,7 +211,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             var exp = (Expression) expression.Body;
 
             foreach (var item in others) {
-                exp = Expression.OrElse (exp,item.Body);
+                exp = Expression.OrElse (exp, item.Body);
                 //((MemberExpression)((MethodCallExpression) item.Body).Object).Expression = expression.Parameters[0];
             }
             return exp;

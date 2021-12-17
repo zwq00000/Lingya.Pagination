@@ -6,14 +6,13 @@ using Remotion.Linq;
 using Remotion.Linq.Clauses;
 using Remotion.Linq.Clauses.Expressions;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lingya.Pagination.Tests {
     public class WhereExpressionTests {
 
         [Fact]
         public void TestExperssion () {
-            var users = Array.Empty<User>();
+            var users = Array.Empty<User> ();
 
             var query = users.AsQueryable (); //CreateTestQuery(users.AsQueryable());
             Assert.NotNull (query.Expression);
@@ -38,23 +37,8 @@ namespace Lingya.Pagination.Tests {
             return new MainFromClause (itemName, itemType, Expression.Constant (querySource));
         }
 
-        public IQueryable<User> CreateTestQuery (IQueryable<User> users) {
+        public static IQueryable<User> CreateTestQuery (IQueryable<User> users) {
             return users.Where (u => u.FullName.Contains ("a"));
-        }
-    }
-
-    public class FilterExpressionTests {
-        private ITestOutputHelper _output;
-
-        public FilterExpressionTests (ITestOutputHelper output) {
-            this._output = output;
-        }
-
-        [Fact]
-        public void TestPredicateExpression () {
-            Expression<Func<User, bool>> expression = u => u.FullName.Contains ("a");
-            _output.WriteLine (expression.ToString ());
-            Assert.Equal ("u => u.FullName.Contains(\"a\")", expression.ToString ());
         }
     }
 }
