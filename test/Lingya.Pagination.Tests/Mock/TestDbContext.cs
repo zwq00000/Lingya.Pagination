@@ -4,7 +4,6 @@ using System.Data.Common;
 using System.Linq;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace Lingya.Pagination.Tests.Mock {
     public class TestDbContext : DbContext {

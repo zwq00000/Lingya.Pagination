@@ -1,6 +1,7 @@
 using System.Linq;
 using Lingya.Pagination;
 using Lingya.Pagination.Tests.Mock;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -11,7 +12,7 @@ namespace Lingya.Pagination.Tests {
 
         public PagingBuilderTests (ITestOutputHelper outputHelper) {
             this.output = outputHelper;
-            this.context = TestDbContext.UseInMemory ();
+            this.context = TestDbContext.UseSqlite ();
         }
 
         [Fact]
@@ -43,7 +44,7 @@ namespace Lingya.Pagination.Tests {
         public void TestSearchDateTime () {
             var parameter = new PageParameter () { SearchKey = "20" };
             var result = context.Users.AsQueryable ().PagingBuilder (parameter)
-                .Search (opt => opt.ContainsFor (u => u.CreatedDate.ToShortDateString ()))
+                .Search (opt => opt.ContainsFor (u => u.CreatedDate.ToString()))
                 .ToPaging ();
             Assert.NotNull (result);
             Assert.Equal (20, result.Page.PageSize);
