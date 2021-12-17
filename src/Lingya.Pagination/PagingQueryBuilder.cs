@@ -19,52 +19,8 @@ namespace Lingya.Pagination {
 
         public PageParameter Parameter => parameter;
 
-        public IPagingQueryBuilder<TSource> ContainsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
-            if (!parameter.HasSearchKey ()) {
-                return this;
-            }
-
-            this._query = this._query.Contains (parameter.SearchKey, expression, others);
-            return this;
-        }
-
-        public IPagingQueryBuilder<TSource> EndsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
-            if (!parameter.HasSearchKey ()) {
-                return this;
-            }
-
-            this._query = this._query.EndsWith (parameter.SearchKey, expression, others);
-            return this;
-        }
-
-        public IPagingQueryBuilder<TSource> StartsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others) {
-            if (!parameter.HasSearchKey ()) {
-                return this;
-            }
-
-            this._query = this._query.StartsWith (parameter.SearchKey, expression, others);
-            return this;
-        }
-
-        public PageResult<TSource> ToPaging () {
-            return this._query.ToPaging (this.parameter);
-        }
-
-        public async Task<PageResult<TSource>> ToPagingAsync () {
-            return await this._query.ToPagingAsync (this.parameter);
-        }
-
-        public PageResult<TResult> ToPaging<TResult> (Expression<Func<TSource, TResult>> selector) {
-            return this._query.ToPaging (this.parameter, selector);
-        }
-
-        public async Task<PageResult<TResult>> ToPagingAsync<TResult> (Expression<Func<TSource, TResult>> selector) {
-            return await this._query.ToPagingAsync (this.parameter, selector);
-        }
-
-        public void Filter (Expression<Func<TSource, bool>> predicate) {
+        public void ApplyFilter (Expression<Func<TSource, bool>> predicate) {
             this._query = _query.Where (predicate);
         }
     }
-
 }
