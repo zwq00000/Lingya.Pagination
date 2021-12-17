@@ -10,13 +10,26 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryUrl>https://github.com/zwq00000/Lingya.Pagination.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>1.0.6</Version>
+    <Version>1.0.7</Version>
     <PackageProjectUrl>https://github.com/zwq00000/Lingya.Pagination</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReleaseNotes>
-    Changes in 1.0.6:
+    # Changes in 1.0.7:
+    - Use Search Method for string searchKey
+    - add WithAggregate method support PageSult with custom Aggregate data
+    ```c#
+    await context.Account.AsNoTracking()
+              .PagingBuilder (parameter)
+              .WithAggregateAsync (g => new Summary(){
+                Count = g.Count (),
+                Quantity = g.Sum (a => a.Quantity),
+                Price = g.Sum (a => a.Price)
+            });
+    ```
+
+    # Changes in 1.0.6:
     - Add PagingQueryBuilder for auto process searchKey,support contains/startsWith/endsWith methods
     ```c#
       return await context.WeatherForecasts

@@ -6,7 +6,11 @@ using System.Threading;
 
 namespace Lingya.Pagination.Tests {
     internal class ClassFactory {
+<<<<<<< HEAD
         public static readonly ClassFactory Instance = new ();
+=======
+        public static readonly ClassFactory Instance = new ClassFactory ();
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
 
         static ClassFactory () { } // Trigger lazy initialization of static fields 
 
@@ -16,7 +20,11 @@ namespace Lingya.Pagination.Tests {
         readonly ReaderWriterLock rwLock;
 
         private ClassFactory () {
+<<<<<<< HEAD
             AssemblyName name = new ("DynamicClasses");
+=======
+            AssemblyName name = new AssemblyName ("DynamicClasses");
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
             AssemblyBuilder assembly = AssemblyBuilder.DefineDynamicAssembly (name, AssemblyBuilderAccess.Run); //AppDomain.CurrentDomain.DefineDynamicAssembly(name, AssemblyBuilderAccess.Run);
 #if ENABLE_LINQ_PARTIAL_TRUST
             new ReflectionPermission (PermissionState.Unrestricted).Assert ();
@@ -35,8 +43,14 @@ namespace Lingya.Pagination.Tests {
         public Type GetDynamicClass (IEnumerable<DynamicProperty> properties) {
             rwLock.AcquireReaderLock (Timeout.Infinite);
             try {
+<<<<<<< HEAD
                 Signature signature = new (properties);
                 if (!classes.TryGetValue (signature, out Type type)) {
+=======
+                Signature signature = new Signature (properties);
+                Type type;
+                if (!classes.TryGetValue (signature, out type)) {
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
                     type = CreateDynamicClass (signature.properties);
                     classes.Add (signature, type);
                 }
@@ -72,7 +86,11 @@ namespace Lingya.Pagination.Tests {
             }
         }
 
+<<<<<<< HEAD
         private static FieldInfo[] GenerateProperties (TypeBuilder tb, DynamicProperty[] properties) {
+=======
+        FieldInfo[] GenerateProperties (TypeBuilder tb, DynamicProperty[] properties) {
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
             FieldInfo[] fields = new FieldBuilder[properties.Length];
             for (int i = 0; i < properties.Length; i++) {
                 DynamicProperty dp = properties[i];
@@ -100,7 +118,11 @@ namespace Lingya.Pagination.Tests {
             return fields;
         }
 
+<<<<<<< HEAD
         private static void GenerateEquals (TypeBuilder tb, FieldInfo[] fields) {
+=======
+        void GenerateEquals (TypeBuilder tb, FieldInfo[] fields) {
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
             MethodBuilder mb = tb.DefineMethod ("Equals",
                 MethodAttributes.Public | MethodAttributes.ReuseSlot |
                 MethodAttributes.Virtual | MethodAttributes.HideBySig,
@@ -135,7 +157,11 @@ namespace Lingya.Pagination.Tests {
             gen.Emit (OpCodes.Ret);
         }
 
+<<<<<<< HEAD
         private static void GenerateGetHashCode (TypeBuilder tb, FieldInfo[] fields) {
+=======
+        void GenerateGetHashCode (TypeBuilder tb, FieldInfo[] fields) {
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
             MethodBuilder mb = tb.DefineMethod ("GetHashCode",
                 MethodAttributes.Public | MethodAttributes.ReuseSlot |
                 MethodAttributes.Virtual | MethodAttributes.HideBySig,

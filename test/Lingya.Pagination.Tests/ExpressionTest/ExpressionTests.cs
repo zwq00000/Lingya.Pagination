@@ -5,49 +5,51 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Lingya.Pagination.Tests.Mock;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Lingya.Pagination.Tests.ExpressionTest {
     public class ExpressionTests {
+<<<<<<< HEAD
         private readonly ITestOutputHelper _output;
+=======
+        private readonly ITestOutputHelper output;
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
 
         private readonly IQueryable<User> UserQuery;
 
         public ExpressionTests (ITestOutputHelper outputHelper) {
+<<<<<<< HEAD
             this._output = outputHelper;
             //InitMockData (100);
             var context = Mock.TestDbContext.UseInMemory ();
+=======
+            this.output = outputHelper;
+            var context = TestDbContext.UseSqlite ();
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
             UserQuery = context.Users;
         }
 
         [Fact]
         public void TestContainsExpression () {
-            //var query = users.AsQueryable ();
             var query = UserQuery;
-            // var exp = ExpressionExtensions.ToContainsExpression<User> (u => u.FullName, Expression.MakeMemberAccess(typeof(User),"u"), "1");
-            // Assert.NotNull (exp);
-            // _output.WriteLine (exp.ToString ());
-            // query = query.Where(exp);
-            // Assert.NotEmpty (query);
-            // Assert.Equal (10,query.Count());
-
-            // var searchKey = "1";
-            // //Expression.Bind()
-            // Expression.Variable (typeof (string));
-            // exp = ExpressionExtensions.ToContainsExpression<User> (u => u.FullName, Expression.Variable (typeof (string), nameof (searchKey)));
-            // Assert.NotNull (exp);
-            // _output.WriteLine (exp.ToString ());
-            // Xunit.Assert.NotEmpty (query.Where (exp));
+            var result = query.Contains ("1", u => u.UserName, u => u.FullName);
+            output.WriteLine (result.ToQueryString ());
+            Assert.NotEmpty (result);
         }
 
         [Fact]
         public void TestContains () {
             var key = "1";
             Expression<Func<User, bool>> exp = u => (u.FullName != null && u.FullName.Contains (key) || (u.DepName != null && u.DepName.StartsWith (key)));
+<<<<<<< HEAD
             _output.WriteLine (exp.ToString ());
+=======
+            output.WriteLine (exp.ToString ());
+>>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
 
-            _output.WriteLine (exp.Body.ToString ());
+            output.WriteLine (exp.Body.ToString ());
         }
 
         [Fact]
@@ -56,7 +58,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             Expression<Func<User, bool>> exp2 = u => u.FullName.Contains ("2");
             Expression<Func<User, bool>> exp3 = u => u.FullName.Contains ("3");
             var result = exp1.Or (exp2, exp3);
-            _output.WriteLine (result.ToString ());
+            output.WriteLine (result.ToString ());
 
             var parameter = Expression.Parameter (typeof (User), "u");
             result = new ParameterReplacer (parameter).Visit (result);
@@ -80,7 +82,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
         public void TestGetWhereExpression () {
             var exp = UserQuery.GetWhereExpression ("1", ExpressionExtensions.StringContainsMethod, u => u.FullName, u => u.DepName);
             Assert.NotNull (exp);
-            _output.WriteLine (exp.ToString ());
+            output.WriteLine (exp.ToString ());
             var query = UserQuery.Provider.CreateQuery (exp);
             Assert.NotEmpty (query);
         }
@@ -127,7 +129,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
             string searchKey,
             Expression<Func<TSource, string>> containsMember,
             params Expression<Func<TSource, string>>[] containsMembers) {
-            var method = StringStartsWithMethod;
+            var method = StringContainsMethod;
             var parameter = GetParameterExpression (containsMember);
             var logics = containsMember.ToSearchLambda (method, searchKey).
             Or (containsMembers.Select (e => e.ToSearchLambda (method, searchKey)).ToArray ());
