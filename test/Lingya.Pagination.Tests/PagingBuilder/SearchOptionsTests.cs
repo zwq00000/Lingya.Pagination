@@ -42,8 +42,4 @@ namespace Lingya.Pagination.Tests {
             output.WriteJson (query.First ());
         }
     }
-
-    public interface ISummaryOptions<TSource> {
-
-    }
 }

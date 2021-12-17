@@ -21,11 +21,7 @@ namespace Lingya.Pagination.Tests {
         }
 
         public override bool Equals (object obj) {
-<<<<<<< HEAD
             return obj is Signature signature && Equals (signature);
-=======
-            return obj is Signature ? Equals ((Signature) obj) : false;
->>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
         }
 
         public bool Equals (Signature other) {

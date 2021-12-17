@@ -11,23 +11,14 @@ using Xunit.Abstractions;
 
 namespace Lingya.Pagination.Tests.ExpressionTest {
     public class ExpressionTests {
-<<<<<<< HEAD
-        private readonly ITestOutputHelper _output;
-=======
         private readonly ITestOutputHelper output;
->>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
 
         private readonly IQueryable<User> UserQuery;
 
         public ExpressionTests (ITestOutputHelper outputHelper) {
-<<<<<<< HEAD
-            this._output = outputHelper;
+            this.output = outputHelper;
             //InitMockData (100);
             var context = Mock.TestDbContext.UseInMemory ();
-=======
-            this.output = outputHelper;
-            var context = TestDbContext.UseSqlite ();
->>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
             UserQuery = context.Users;
         }
 
@@ -43,11 +34,7 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
         public void TestContains () {
             var key = "1";
             Expression<Func<User, bool>> exp = u => (u.FullName != null && u.FullName.Contains (key) || (u.DepName != null && u.DepName.StartsWith (key)));
-<<<<<<< HEAD
-            _output.WriteLine (exp.ToString ());
-=======
             output.WriteLine (exp.ToString ());
->>>>>>> af9c08603256dd2d65573c09bca64f6b666b9013
 
             output.WriteLine (exp.Body.ToString ());
         }
