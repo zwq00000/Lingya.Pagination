@@ -17,14 +17,14 @@ namespace Lingya.Pagination {
         /// <param name="parameter">paging parameter</param>
         /// <typeparam name="TSource"></typeparam>
         /// <returns>IPagingQueryBuilder</returns>
-        public static IPagingQueryBuilder<TSource> PagingBuilder<TSource> (this IQueryable<TSource> source,
+        public static IPagingQueryBuilder<TSource> PagingBuilder<TSource>(this IQueryable<TSource> source,
             PageParameter parameter) {
 
             if (parameter == null) {
-                parameter = new PageParameter ();
+                parameter = new PageParameter();
             }
 
-            return new PagingQueryBuilder<TSource> (source, parameter);
+            return new PagingQueryBuilder<TSource>(source, parameter);
         }
 
         /// <summary>
@@ -34,10 +34,10 @@ namespace Lingya.Pagination {
         /// <param name="seachBuilder">关键字搜索配置</param>
         /// <typeparam name="TSource"></typeparam>
         /// <returns></returns>
-        public static IPagingQueryBuilder<TSource> Search<TSource> (this IPagingQueryBuilder<TSource> builder, Action<ISearchOptions<TSource>> seachBuilder) {
-            var options = new SearchOptions<TSource> (builder.Parameter);
-            seachBuilder (options);
-            builder.ApplyFilter (options.BuildExpression ());
+        public static IPagingQueryBuilder<TSource> Search<TSource>(this IPagingQueryBuilder<TSource> builder, Action<ISearchOptions<TSource>> seachBuilder) {
+            var options = new SearchOptions<TSource>(builder.Parameter);
+            seachBuilder(options);
+            builder.ApplyFilter(options.BuildExpression());
             return builder;
         }
 
@@ -48,8 +48,8 @@ namespace Lingya.Pagination {
         /// <param name="builder">分页构造器</param>
         /// <typeparam name="TSource"></typeparam>
         /// <returns></returns>
-        public static PageResult<TSource> ToPaging<TSource> (this IPagingQueryBuilder<TSource> builder) {
-            return builder.Query.ToPaging (builder.Parameter);
+        public static PageResult<TSource> ToPaging<TSource>(this IPagingQueryBuilder<TSource> builder) {
+            return builder.Query.ToPaging(builder.Parameter);
         }
 
         /// <summary>
@@ -58,8 +58,8 @@ namespace Lingya.Pagination {
         /// <param name="builder"></param>
         /// <typeparam name="TSource"></typeparam>
         /// <returns></returns>
-        public static async Task<PageResult<TSource>> ToPagingAsync<TSource> (this IPagingQueryBuilder<TSource> builder) {
-            return await builder.Query.ToPagingAsync (builder.Parameter);
+        public static async Task<PageResult<TSource>> ToPagingAsync<TSource>(this IPagingQueryBuilder<TSource> builder) {
+            return await builder.Query.ToPagingAsync(builder.Parameter);
         }
 
         /// <summary>
@@ -72,8 +72,8 @@ namespace Lingya.Pagination {
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="TResult"></typeparam>
         /// <returns></returns>
-        public static PageResult<TResult> ToPaging<TSource, TResult> (this IPagingQueryBuilder<TSource> builder, Expression<Func<TSource, TResult>> selector) {
-            return builder.Query.ToPaging (builder.Parameter, selector);
+        public static PageResult<TResult> ToPaging<TSource, TResult>(this IPagingQueryBuilder<TSource> builder, Expression<Func<TSource, TResult>> selector) {
+            return builder.Query.ToPaging(builder.Parameter, selector);
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace Lingya.Pagination {
         /// <typeparam name="TSource"></typeparam>
         /// <typeparam name="TResult"></typeparam>
         /// <returns></returns>
-        public static async Task<PageResult<TResult>> ToPagingAsync<TSource, TResult> (this IPagingQueryBuilder<TSource> builder, Expression<Func<TSource, TResult>> selector) {
-            return await builder.Query.ToPagingAsync (builder.Parameter, selector);
+        public static async Task<PageResult<TResult>> ToPagingAsync<TSource, TResult>(this IPagingQueryBuilder<TSource> builder, Expression<Func<TSource, TResult>> selector) {
+            return await builder.Query.ToPagingAsync(builder.Parameter, selector);
         }
 
         #endregion
@@ -102,10 +102,10 @@ namespace Lingya.Pagination {
         /// <typeparam name="TSource">原类型</typeparam>
         /// <typeparam name="TAggregate">聚合类型</typeparam>
 
-        public static PageResult<TSource, TAggregate> WithAggregate<TSource, TAggregate> (this IPagingQueryBuilder<TSource> builder, Expression<Func<IGrouping<bool, TSource>, TAggregate>> aggExpression) {
-            var aggregate = builder.Query.GroupBy (t => true).Select (aggExpression).Single ();
-            var result = builder.ToPaging ();
-            return new PageResult<TSource, TAggregate> (result, aggregate);
+        public static PageResult<TSource, TAggregate> WithAggregate<TSource, TAggregate>(this IPagingQueryBuilder<TSource> builder, Expression<Func<IGrouping<bool, TSource>, TAggregate>> aggExpression) {
+            var aggregate = builder.Query.GroupBy(t => true).Select(aggExpression).Single();
+            var result = builder.ToPaging();
+            return new PageResult<TSource, TAggregate>(result, aggregate);
         }
 
         /// <summary>
@@ -116,10 +116,10 @@ namespace Lingya.Pagination {
         /// <typeparam name="TSource">原类型</typeparam>
         /// <typeparam name="TAggregate">聚合类型</typeparam>
         /// <returns></returns>
-        public static async Task<PageResult<TSource, TAggregate>> WithAggregateAsync<TSource, TAggregate> (this IPagingQueryBuilder<TSource> builder, Expression<Func<IGrouping<bool, TSource>, TAggregate>> aggExpression) {
-            var aggregate = await builder.Query.GroupBy (t => true).Select (aggExpression).SingleAsync ();
-            var result = await builder.ToPagingAsync ();
-            return new PageResult<TSource, TAggregate> (result, aggregate);
+        public static async Task<PageResult<TSource, TAggregate>> WithAggregateAsync<TSource, TAggregate>(this IPagingQueryBuilder<TSource> builder, Expression<Func<IGrouping<bool, TSource>, TAggregate>> aggExpression) {
+            var aggregate = await builder.Query.GroupBy(t => true).Select(aggExpression).SingleAsync();
+            var result = await builder.ToPagingAsync();
+            return new PageResult<TSource, TAggregate>(result, aggregate);
         }
 
         /// <summary>
@@ -131,15 +131,16 @@ namespace Lingya.Pagination {
         /// <param name="aggExpression">聚合表达式</param>
         /// <typeparam name="TSource">原类型</typeparam>
         /// <typeparam name="TAggregate">聚合类型</typeparam>
-        public static PageResult<TSource, TAggregate> WithAggregate<TSource, TAggregate> (this IPagingQueryBuilder<TSource> builder,
+        [System.Obsolete("使用 ToAggregate 扩展方法，新版 efcore 不支持多个聚合方法")]
+        public static PageResult<TSource, TAggregate> WithAggregate<TSource, TAggregate>(this IPagingQueryBuilder<TSource> builder,
             Expression<Func<TSource, TAggregate>> projection,
             Expression<Func<IGrouping<bool, TAggregate>, TAggregate>> aggExpression) {
-            var aggregate = builder.Query.Select (projection)
-                .GroupBy (t => true)
-                .Select (aggExpression)
-                .Single ();
-            var result = builder.ToPaging ();
-            return new PageResult<TSource, TAggregate> (result, aggregate);
+            var aggregate = builder.Query.Select(projection)
+                .GroupBy(t => true)
+                .Select(aggExpression)
+                .Single();
+            var result = builder.ToPaging();
+            return new PageResult<TSource, TAggregate>(result, aggregate);
         }
 
         /// <summary>
@@ -152,16 +153,64 @@ namespace Lingya.Pagination {
         /// <typeparam name="TSource">原类型</typeparam>
         /// <typeparam name="TAggregate">聚合类型</typeparam>
         /// <returns></returns>
-        public static async Task<PageResult<TSource, TAggregate>> WithAggregateAsync<TSource, TAggregate> (this IPagingQueryBuilder<TSource> builder,
+        [System.Obsolete("使用 ToAggregate 扩展方法，新版 efcore 不支持多个聚合方法")]
+        public static async Task<PageResult<TSource, TAggregate>> WithAggregateAsync<TSource, TAggregate>(this IPagingQueryBuilder<TSource> builder,
             Expression<Func<TSource, TAggregate>> projection,
             Expression<Func<IGrouping<bool, TAggregate>, TAggregate>> aggExpression) {
-            var aggregate = await builder.Query.Select (projection)
-                .GroupBy (t => true)
-                .Select (aggExpression)
-                .SingleAsync ();
-            var result = await builder.ToPagingAsync ();
-            return new PageResult<TSource, TAggregate> (result, aggregate);
+            var aggregate = await builder.Query.Select(projection)
+                .GroupBy(t => true)
+                .Select(aggExpression)
+                .SingleAsync();
+            var result = await builder.ToPagingAsync();
+            return new PageResult<TSource, TAggregate>(result, aggregate);
         }
+        #endregion
+        #region 
+
+        /// <summary>
+        /// 返回带有 聚合数据的分页结果的同步方法
+        /// 支持 自定义分组聚合
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TGroupKey"></typeparam>
+        /// <typeparam name="TAggregate"></typeparam>
+        /// <param name="builder">分页查询构造器</param>
+        /// <param name="groupBy">自定义分组</param>
+        /// <param name="aggExpression">聚合表达式</param>
+        /// <returns></returns>
+        public static PageResult<TSource, TAggregate> ToAggregate<TSource, TGroupKey, TAggregate>(this IPagingQueryBuilder<TSource> builder,
+            Expression<Func<TSource, TGroupKey>> groupBy,
+            Expression<Func<IGrouping<TGroupKey, TSource>, TAggregate>> aggExpression)
+            where TAggregate : new() {
+            var aggregate = builder.Query.GroupBy(groupBy)
+               .Select(aggExpression)
+               .FirstOrDefault();
+            var result = builder.ToPaging();
+            return new PageResult<TSource, TAggregate>(result, aggregate ?? new TAggregate());
+        }
+
+        /// <summary>
+        /// 返回带有 聚合数据的分页结果的异步方法
+        /// 支持 自定义分组聚合
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <typeparam name="TGroupKey"></typeparam>
+        /// <typeparam name="TAggregate"></typeparam>
+        /// <param name="builder">分页查询构造器</param>
+        /// <param name="groupBy">自定义分组</param>
+        /// <param name="aggExpression">聚合表达式</param>
+        /// <returns></returns>
+        public static async Task<PageResult<TSource, TAggregate>> ToAggregateAsync<TSource, TGroupKey, TAggregate>(this IPagingQueryBuilder<TSource> builder,
+            Expression<Func<TSource, TGroupKey>> groupBy,
+            Expression<Func<IGrouping<TGroupKey, TSource>, TAggregate>> aggExpression)
+            where TAggregate : new() {
+            var aggregate = await builder.Query.GroupBy(groupBy)
+               .Select(aggExpression)
+               .FirstOrDefaultAsync();
+            var result = await builder.ToPagingAsync();
+            return new PageResult<TSource, TAggregate>(result, aggregate ?? new TAggregate());
+        }
+
         #endregion
     }
 
@@ -177,7 +226,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
-        ISearchOptions<TSource> ContainsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
+        ISearchOptions<TSource> ContainsFor(Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
         /// 增加 使用 <see cref="string.StartsWith(string)" /> 搜索的过滤属性
@@ -186,7 +235,7 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
-        ISearchOptions<TSource> StartsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
+        ISearchOptions<TSource> StartsFor(Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
         /// 增加 使用 <see cref="string.EndsWith(string)" /> 搜索的过滤属性
@@ -195,13 +244,13 @@ namespace Lingya.Pagination {
         /// <param name="expression"></param>
         /// <param name="others"></param>
         /// <returns></returns>
-        ISearchOptions<TSource> EndsFor (Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
+        ISearchOptions<TSource> EndsFor(Expression<Func<TSource, string>> expression, params Expression<Func<TSource, string>>[] others);
 
         /// <summary>
         /// 构建 表达式
         /// </summary>
         /// <returns></returns>
-        Expression<Func<TSource, bool>> BuildExpression ();
+        Expression<Func<TSource, bool>> BuildExpression();
     }
 
 }
