@@ -177,25 +177,24 @@ namespace Lingya.Pagination.Tests {
         static readonly string keywordNew = "new";
 
         static Dictionary<string, object> keywords;
-
-        Dictionary<string, object> symbols;
+        readonly Dictionary<string, object> symbols;
         IDictionary<string, object> externals;
-        Dictionary<Expression, string> literals;
+        readonly Dictionary<Expression, string> literals;
         ParameterExpression it;
-        string text;
+        readonly string text;
         int textPos;
-        int textLen;
+        readonly int textLen;
         char ch;
         Token token;
 
         public ExpressionParser (ParameterExpression[] parameters, string expression, object[] values) {
-            if (expression == null) throw new ArgumentNullException (nameof (expression));
             if (keywords == null) keywords = CreateKeywords ();
             symbols = new Dictionary<string, object> (StringComparer.OrdinalIgnoreCase);
             literals = new Dictionary<Expression, string> ();
             if (parameters != null) ProcessParameters (parameters);
             if (values != null) ProcessValues (values);
-            text = expression;
+            text = expression ??
+                throw new ArgumentNullException (nameof (expression));
             textLen = text.Length;
             SetTextPos (0);
             NextToken ();
@@ -212,8 +211,8 @@ namespace Lingya.Pagination.Tests {
         void ProcessValues (object[] values) {
             for (int i = 0; i < values.Length; i++) {
                 object value = values[i];
-                if (i == values.Length - 1 && value is IDictionary<string, object>) {
-                    externals = (IDictionary<string, object>) value;
+                if (i == values.Length - 1 && value is IDictionary<string, object> dictionary) {
+                    externals = dictionary;
                 } else {
                     AddSymbol ("@" + i.ToString (System.Globalization.CultureInfo.InvariantCulture), value);
                 }
@@ -238,7 +237,7 @@ namespace Lingya.Pagination.Tests {
 
 #pragma warning disable 0219
         public IEnumerable<DynamicOrdering> ParseOrdering () {
-            List<DynamicOrdering> orderings = new List<DynamicOrdering> ();
+            List<DynamicOrdering> orderings = new ();
             while (true) {
                 Expression expr = ParseExpression ();
                 bool ascending = true;
@@ -454,26 +453,22 @@ namespace Lingya.Pagination.Tests {
         }
 
         Expression ParsePrimaryStart () {
-            switch (token.id) {
-                case TokenId.Identifier:
-                    return ParseIdentifier ();
-                case TokenId.StringLiteral:
-                    return ParseStringLiteral ();
-                case TokenId.IntegerLiteral:
-                    return ParseIntegerLiteral ();
-                case TokenId.RealLiteral:
-                    return ParseRealLiteral ();
-                case TokenId.OpenParen:
-                    return ParseParenExpression ();
-                default:
-                    throw ParseError (Res.ExpressionExpected);
-            }
+            return token.id
+            switch {
+                TokenId.Identifier => ParseIdentifier (),
+                    TokenId.StringLiteral => ParseStringLiteral (),
+                    TokenId.IntegerLiteral => ParseIntegerLiteral (),
+                    TokenId.RealLiteral => ParseRealLiteral (),
+                    TokenId.OpenParen => ParseParenExpression (),
+                    _ =>
+                    throw ParseError (Res.ExpressionExpected),
+            };
         }
 
         Expression ParseStringLiteral () {
             ValidateToken (TokenId.StringLiteral);
             char quote = token.text[0];
-            string s = token.text.Substring (1, token.text.Length - 2);
+            string s = token.text[1.. ^ 1];
             int start = 0;
             while (true) {
                 int i = s.IndexOf (quote, start);
@@ -495,8 +490,7 @@ namespace Lingya.Pagination.Tests {
             ValidateToken (TokenId.IntegerLiteral);
             string text = token.text;
             if (text[0] != '-') {
-                ulong value;
-                if (!UInt64.TryParse (text, out value))
+                if (!UInt64.TryParse (text, out ulong value))
                     throw ParseError (Res.InvalidIntegerLiteral, text);
                 NextToken ();
                 if (value <= (ulong) Int32.MaxValue) return CreateLiteral ((int) value, text);
@@ -504,8 +498,7 @@ namespace Lingya.Pagination.Tests {
                 if (value <= (ulong) Int64.MaxValue) return CreateLiteral ((long) value, text);
                 return CreateLiteral (value, text);
             } else {
-                long value;
-                if (!Int64.TryParse (text, out value))
+                if (!Int64.TryParse (text, out long value))
                     throw ParseError (Res.InvalidIntegerLiteral, text);
                 NextToken ();
                 if (value >= Int32.MinValue && value <= Int32.MaxValue)
@@ -518,13 +511,11 @@ namespace Lingya.Pagination.Tests {
             ValidateToken (TokenId.RealLiteral);
             string text = token.text;
             object value = null;
-            char last = text[text.Length - 1];
+            char last = text[ ^ 1];
             if (last == 'F' || last == 'f') {
-                float f;
-                if (Single.TryParse (text.Substring (0, text.Length - 1), out f)) value = f;
+                if (float.TryParse (text[0.. ^ 1], out float f)) value = f;
             } else {
-                double d;
-                if (Double.TryParse (text, out d)) value = d;
+                if (double.TryParse (text, out double d)) value = d;
             }
             if (value == null) throw ParseError (Res.InvalidRealLiteral, text);
             NextToken ();
@@ -548,9 +539,8 @@ namespace Lingya.Pagination.Tests {
 
         Expression ParseIdentifier () {
             ValidateToken (TokenId.Identifier);
-            object value;
-            if (keywords.TryGetValue (token.text, out value)) {
-                if (value is Type) return ParseTypeAccess ((Type) value);
+            if (keywords.TryGetValue (token.text, out object value)) {
+                if (value is Type type) return ParseTypeAccess (type);
                 if (value == (object) keywordIt) return ParseIt ();
                 if (value == (object) keywordIif) return ParseIif ();
                 if (value == (object) keywordNew) return ParseNew ();
@@ -559,12 +549,10 @@ namespace Lingya.Pagination.Tests {
             }
             if (symbols.TryGetValue (token.text, out value) ||
                 externals != null && externals.TryGetValue (token.text, out value)) {
-                Expression expr = value as Expression;
-                if (expr == null) {
+                if (value is not Expression expr) {
                     expr = Expression.Constant (value);
                 } else {
-                    LambdaExpression lambda = expr as LambdaExpression;
-                    if (lambda != null) return ParseLambdaInvocation (lambda);
+                    if (expr is LambdaExpression lambda) return ParseLambdaInvocation (lambda);
                 }
                 NextToken ();
                 return expr;
@@ -614,8 +602,8 @@ namespace Lingya.Pagination.Tests {
             NextToken ();
             ValidateToken (TokenId.OpenParen, Res.OpenParenExpected);
             NextToken ();
-            List<DynamicProperty> properties = new List<DynamicProperty> ();
-            List<Expression> expressions = new List<Expression> ();
+            List<DynamicProperty> properties = new ();
+            List<Expression> expressions = new ();
             while (true) {
                 int exprPos = token.pos;
                 Expression expr = ParseExpression ();
@@ -625,8 +613,7 @@ namespace Lingya.Pagination.Tests {
                     propName = GetIdentifier ();
                     NextToken ();
                 } else {
-                    MemberExpression me = expr as MemberExpression;
-                    if (me == null) throw ParseError (exprPos, Res.MissingAsClause);
+                    if (expr is not MemberExpression me) throw ParseError (exprPos, Res.MissingAsClause);
                     propName = me.Member.Name;
                 }
                 expressions.Add (expr);
@@ -647,8 +634,7 @@ namespace Lingya.Pagination.Tests {
             int errorPos = token.pos;
             NextToken ();
             Expression[] args = ParseArgumentList ();
-            MethodBase method;
-            if (FindMethod (lambda.Type, "Invoke", false, args, out method) != 1)
+            if (FindMethod (lambda.Type, "Invoke", false, args, out _) != 1)
                 throw ParseError (errorPos, Res.ArgsIncompatibleWithLambda);
             return Expression.Invoke (lambda, args);
         }
@@ -664,8 +650,7 @@ namespace Lingya.Pagination.Tests {
             }
             if (token.id == TokenId.OpenParen) {
                 Expression[] args = ParseArgumentList ();
-                MethodBase method;
-                switch (FindBestMethod (type.GetConstructors (), args, out method)) {
+                switch (FindBestMethod (type.GetConstructors (), args, out MethodBase method)) {
                     case 0:
                         if (args.Length == 1)
                             return GenerateConversion (args[0], type, errorPos);
@@ -681,7 +666,7 @@ namespace Lingya.Pagination.Tests {
             return ParseMemberAccess (type, null);
         }
 
-        Expression GenerateConversion (Expression expr, Type type, int errorPos) {
+        private static Expression GenerateConversion (Expression expr, Type type, int errorPos) {
             Type exprType = expr.Type;
             if (exprType == type) return expr;
             if (exprType.IsValueType && type.IsValueType) {
@@ -713,8 +698,7 @@ namespace Lingya.Pagination.Tests {
                     }
                 }
                 Expression[] args = ParseArgumentList ();
-                MethodBase mb;
-                switch (FindMethod (type, id, instance == null, args, out mb)) {
+                switch (FindMethod (type, id, instance == null, args, out MethodBase mb)) {
                     case 0:
                         throw ParseError (errorPos, Res.NoApplicableMethod,
                             id, GetTypeName (type));
@@ -735,8 +719,8 @@ namespace Lingya.Pagination.Tests {
                 if (member == null)
                     throw ParseError (errorPos, Res.UnknownPropertyOrField,
                         id, GetTypeName (type));
-                return member is PropertyInfo ?
-                    Expression.Property (instance, (PropertyInfo) member) :
+                return member is PropertyInfo info ?
+                    Expression.Property (instance, info) :
                     Expression.Field (instance, (FieldInfo) member);
             }
         }
@@ -761,8 +745,7 @@ namespace Lingya.Pagination.Tests {
             it = innerIt;
             Expression[] args = ParseArgumentList ();
             it = outerIt;
-            MethodBase signature;
-            if (FindMethod (typeof (IEnumerableSignatures), methodName, false, args, out signature) != 1)
+            if (FindMethod (typeof (IEnumerableSignatures), methodName, false, args, out MethodBase signature) != 1)
                 throw ParseError (errorPos, Res.NoApplicableAggregate, methodName);
             Type[] typeArgs;
             if (signature.Name == "Min" || signature.Name == "Max") {
@@ -781,14 +764,14 @@ namespace Lingya.Pagination.Tests {
         Expression[] ParseArgumentList () {
             ValidateToken (TokenId.OpenParen, Res.OpenParenExpected);
             NextToken ();
-            Expression[] args = token.id != TokenId.CloseParen ? ParseArguments () : new Expression[0];
+            Expression[] args = token.id != TokenId.CloseParen ? ParseArguments () : Array.Empty<Expression> ();
             ValidateToken (TokenId.CloseParen, Res.CloseParenOrCommaExpected);
             NextToken ();
             return args;
         }
 
         Expression[] ParseArguments () {
-            List<Expression> argList = new List<Expression> ();
+            List<Expression> argList = new ();
             while (true) {
                 argList.Add (ParseExpression ());
                 if (token.id != TokenId.Comma) break;
@@ -812,17 +795,15 @@ namespace Lingya.Pagination.Tests {
                     throw ParseError (errorPos, Res.InvalidIndex);
                 return Expression.ArrayIndex (expr, index);
             } else {
-                MethodBase mb;
-                switch (FindIndexer (expr.Type, args, out mb)) {
-                    case 0:
+                return FindIndexer (expr.Type, args, out MethodBase mb) switch {
+                    0 =>
                         throw ParseError (errorPos, Res.NoApplicableIndexer,
-                            GetTypeName (expr.Type));
-                    case 1:
-                        return Expression.Call (expr, (MethodInfo) mb, args);
-                    default:
-                        throw ParseError (errorPos, Res.AmbiguousIndexerInvocation,
-                            GetTypeName (expr.Type));
-                }
+                                GetTypeName (expr.Type)),
+                            1 => Expression.Call (expr, (MethodInfo) mb, args),
+                            _ =>
+                            throw ParseError (errorPos, Res.AmbiguousIndexerInvocation,
+                                GetTypeName (expr.Type)),
+                };
             }
         }
 
@@ -889,8 +870,7 @@ namespace Lingya.Pagination.Tests {
 
         void CheckAndPromoteOperand (Type signatures, string opName, ref Expression expr, int errorPos) {
             Expression[] args = new Expression[] { expr };
-            MethodBase method;
-            if (FindMethod (signatures, "F", false, args, out method) != 1)
+            if (FindMethod (signatures, "F", false, args, out _) != 1)
                 throw ParseError (errorPos, Res.IncompatibleOperand,
                     opName, GetTypeName (args[0].Type));
             expr = args[0];
@@ -898,19 +878,18 @@ namespace Lingya.Pagination.Tests {
 
         void CheckAndPromoteOperands (Type signatures, string opName, ref Expression left, ref Expression right, int errorPos) {
             Expression[] args = new Expression[] { left, right };
-            MethodBase method;
-            if (FindMethod (signatures, "F", false, args, out method) != 1)
+            if (FindMethod (signatures, "F", false, args, out _) != 1)
                 throw IncompatibleOperandsError (opName, left, right, errorPos);
             left = args[0];
             right = args[1];
         }
 
-        Exception IncompatibleOperandsError (string opName, Expression left, Expression right, int pos) {
+        private static Exception IncompatibleOperandsError (string opName, Expression left, Expression right, int pos) {
             return ParseError (pos, Res.IncompatibleOperands,
                 opName, GetTypeName (left.Type), GetTypeName (right.Type));
         }
 
-        MemberInfo FindPropertyOrField (Type type, string memberName, bool staticAccess) {
+        private static MemberInfo FindPropertyOrField (Type type, string memberName, bool staticAccess) {
             BindingFlags flags = BindingFlags.Public | BindingFlags.DeclaredOnly |
                 (staticAccess ? BindingFlags.Static : BindingFlags.Instance);
             foreach (Type t in SelfAndBaseTypes (type)) {
@@ -952,7 +931,7 @@ namespace Lingya.Pagination.Tests {
 
         static IEnumerable<Type> SelfAndBaseTypes (Type type) {
             if (type.IsInterface) {
-                List<Type> types = new List<Type> ();
+                List<Type> types = new ();
                 AddInterface (types, type);
                 return types;
             }
@@ -1015,14 +994,12 @@ namespace Lingya.Pagination.Tests {
 
         Expression PromoteExpression (Expression expr, Type type, bool exact) {
             if (expr.Type == type) return expr;
-            if (expr is ConstantExpression) {
-                ConstantExpression ce = (ConstantExpression) expr;
+            if (expr is ConstantExpression ce) {
                 if (ce == nullLiteral) {
                     if (!type.IsValueType || IsNullableType (type))
                         return Expression.Constant (null, type);
                 } else {
-                    string text;
-                    if (literals.TryGetValue (ce, out text)) {
+                    if (literals.TryGetValue (ce, out string text)) {
                         Type target = GetNonNullableType (type);
                         Object value = null;
                         switch (Type.GetTypeCode (ce.Type)) {
@@ -1252,15 +1229,15 @@ namespace Lingya.Pagination.Tests {
             return 0;
         }
 
-        Expression GenerateEqual (Expression left, Expression right) {
+        private static Expression GenerateEqual (Expression left, Expression right) {
             return Expression.Equal (left, right);
         }
 
-        Expression GenerateNotEqual (Expression left, Expression right) {
+        private static Expression GenerateNotEqual (Expression left, Expression right) {
             return Expression.NotEqual (left, right);
         }
 
-        Expression GenerateGreaterThan (Expression left, Expression right) {
+        private static Expression GenerateGreaterThan (Expression left, Expression right) {
             if (left.Type == typeof (string)) {
                 return Expression.GreaterThan (
                     GenerateStaticMethodCall ("Compare", left, right),
@@ -1270,7 +1247,7 @@ namespace Lingya.Pagination.Tests {
             return Expression.GreaterThan (left, right);
         }
 
-        Expression GenerateGreaterThanEqual (Expression left, Expression right) {
+        private static Expression GenerateGreaterThanEqual (Expression left, Expression right) {
             if (left.Type == typeof (string)) {
                 return Expression.GreaterThanOrEqual (
                     GenerateStaticMethodCall ("Compare", left, right),
@@ -1280,7 +1257,7 @@ namespace Lingya.Pagination.Tests {
             return Expression.GreaterThanOrEqual (left, right);
         }
 
-        Expression GenerateLessThan (Expression left, Expression right) {
+        private static Expression GenerateLessThan (Expression left, Expression right) {
             if (left.Type == typeof (string)) {
                 return Expression.LessThan (
                     GenerateStaticMethodCall ("Compare", left, right),
@@ -1290,7 +1267,7 @@ namespace Lingya.Pagination.Tests {
             return Expression.LessThan (left, right);
         }
 
-        Expression GenerateLessThanEqual (Expression left, Expression right) {
+        private static Expression GenerateLessThanEqual (Expression left, Expression right) {
             if (left.Type == typeof (string)) {
                 return Expression.LessThanOrEqual (
                     GenerateStaticMethodCall ("Compare", left, right),
@@ -1300,29 +1277,29 @@ namespace Lingya.Pagination.Tests {
             return Expression.LessThanOrEqual (left, right);
         }
 
-        Expression GenerateAdd (Expression left, Expression right) {
+        private static Expression GenerateAdd (Expression left, Expression right) {
             if (left.Type == typeof (string) && right.Type == typeof (string)) {
                 return GenerateStaticMethodCall ("Concat", left, right);
             }
             return Expression.Add (left, right);
         }
 
-        Expression GenerateSubtract (Expression left, Expression right) {
+        private static Expression GenerateSubtract (Expression left, Expression right) {
             return Expression.Subtract (left, right);
         }
 
-        Expression GenerateStringConcat (Expression left, Expression right) {
+        private static Expression GenerateStringConcat (Expression left, Expression right) {
             return Expression.Call (
                 null,
                 typeof (string).GetMethod ("Concat", new [] { typeof (object), typeof (object) }),
                 new [] { left, right });
         }
 
-        MethodInfo GetStaticMethod (string methodName, Expression left, Expression right) {
+        private static MethodInfo GetStaticMethod (string methodName, Expression left, Expression right) {
             return left.Type.GetMethod (methodName, new [] { left.Type, right.Type });
         }
 
-        Expression GenerateStaticMethodCall (string methodName, Expression left, Expression right) {
+        private static Expression GenerateStaticMethodCall (string methodName, Expression left, Expression right) {
             return Expression.Call (null, GetStaticMethod (methodName, left, right), new [] { left, right });
         }
 
@@ -1502,7 +1479,7 @@ namespace Lingya.Pagination.Tests {
                     throw ParseError (textPos, Res.InvalidCharacter, ch);
             }
             token.id = t;
-            token.text = text.Substring (tokenPos, textPos - tokenPos);
+            token.text = text[tokenPos..textPos];
             token.pos = tokenPos;
         }
 
@@ -1513,7 +1490,7 @@ namespace Lingya.Pagination.Tests {
         string GetIdentifier () {
             ValidateToken (TokenId.Identifier, Res.IdentifierExpected);
             string id = token.text;
-            if (id.Length > 1 && id[0] == '@') id = id.Substring (1);
+            if (id.Length > 1 && id[0] == '@') id = id[1..];
             return id;
         }
 
@@ -1533,12 +1510,12 @@ namespace Lingya.Pagination.Tests {
             return ParseError (token.pos, format, args);
         }
 
-        Exception ParseError (int pos, string format, params object[] args) {
+        private static Exception ParseError (int pos, string format, params object[] args) {
             return new ParseException (string.Format (System.Globalization.CultureInfo.CurrentCulture, format, args), pos);
         }
 
         static Dictionary<string, object> CreateKeywords () {
-            Dictionary<string, object> d = new Dictionary<string, object> (StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, object> d = new (StringComparer.OrdinalIgnoreCase);
             d.Add ("true", trueLiteral);
             d.Add ("false", falseLiteral);
             d.Add ("null", nullLiteral);

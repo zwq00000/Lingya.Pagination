@@ -33,7 +33,7 @@ namespace Lingya.Pagination {
         /// </summary>
         /// <param name="pageSize">页面大小.</param>
         /// <param name="pageNum">当前页码.</param>
-        public PageParameter(int pageSize = 20, int pageNum = default(int)) {
+        public PageParameter(int pageSize = 20, int pageNum = default) {
             PageSize = pageSize < MinPageSize ? MinPageSize : pageSize;
             Page = pageNum < 0 ? 0 : pageNum;
         }

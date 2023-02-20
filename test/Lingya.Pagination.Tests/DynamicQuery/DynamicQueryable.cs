@@ -41,7 +41,7 @@ namespace Lingya.Pagination.Tests {
             ParameterExpression[] parameters = new ParameterExpression[] {
                 Expression.Parameter (source.ElementType, "")
             };
-            ExpressionParser parser = new ExpressionParser (parameters, ordering, values);
+            ExpressionParser parser = new (parameters, ordering, values);
             IEnumerable<DynamicOrdering> orderings = parser.ParseOrdering ();
             Expression queryExpr = source.Expression;
             string methodAsc = "OrderBy";

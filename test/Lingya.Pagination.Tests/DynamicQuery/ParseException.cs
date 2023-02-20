@@ -2,7 +2,7 @@ using System;
 
 namespace Lingya.Pagination.Tests {
     public sealed class ParseException : Exception {
-        int position;
+        private readonly int position;
 
         public ParseException (string message, int position) : base (message) {
             this.position = position;

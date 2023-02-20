@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 namespace Lingya.Pagination.Tests {
     public static class DynamicExpression {
         public static Expression Parse (Type resultType, string expression, params object[] values) {
-            ExpressionParser parser = new ExpressionParser (null, expression, values);
+            ExpressionParser parser = new (null, expression, values);
             return parser.Parse (resultType);
         }
 
@@ -14,7 +14,7 @@ namespace Lingya.Pagination.Tests {
         }
 
         public static LambdaExpression ParseLambda (ParameterExpression[] parameters, Type resultType, string expression, params object[] values) {
-            ExpressionParser parser = new ExpressionParser (parameters, expression, values);
+            ExpressionParser parser = new (parameters, expression, values);
             return Expression.Lambda (parser.Parse (resultType), parameters);
         }
 

@@ -17,7 +17,8 @@ namespace Lingya.Pagination.Tests.ExpressionTest {
 
         public ExpressionTests (ITestOutputHelper outputHelper) {
             this.output = outputHelper;
-            var context = TestDbContext.UseSqlite ();
+            //InitMockData (100);
+            var context = Mock.TestDbContext.UseInMemory ();
             UserQuery = context.Users;
         }
 

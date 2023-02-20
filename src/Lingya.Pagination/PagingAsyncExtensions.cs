@@ -86,17 +86,6 @@ namespace Lingya.Pagination
             return new PageResult<T>(paging, source);
         }
 
-        /// <summary>
-        /// Get Page Result, like Skip(skip) and Take(pageSize)
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="page"></param>
-        /// <returns></returns>
-        private static async Task<IEnumerable<T>> ToPageAsync<T>(this IQueryable<T> source, Paging page) {
-            return await source.Skip(page.Skip).Take(page.PageSize).ToArrayAsync();
-        }
-
         private static async Task<Paging> CreatePagingAsync<T>(this IQueryable<T> source, int? pageSize, int? pageNumber) {
             var count = await source.CountAsync();
             return new Paging(count, pageSize??DEFAULT_PAGE_SIZE, pageNumber??DEFAULT_PAGE_NUMBER);

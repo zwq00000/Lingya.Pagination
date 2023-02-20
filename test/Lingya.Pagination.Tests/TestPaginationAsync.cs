@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using Lingya.Pagination;
 using Lingya.Pagination.Tests.Mock;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Lingya.Pagination.Tests {
     public class TestPaginationAsync {
+        private readonly TestDbContext context;
 
-        public TestPaginationAsync () { }
+        public TestPaginationAsync () {
+             this.context = TestDbContext.UseInMemory ();
+        }
 
         [Fact]
         public async void TestNullParameter () {

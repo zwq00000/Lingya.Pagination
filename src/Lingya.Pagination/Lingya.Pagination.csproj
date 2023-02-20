@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <PackageId>Lingya.Pagination</PackageId>
     <Authors>zwq00000@hotmail.com</Authors>
     <Company>Tianjin Lingya Tech CO.</Company>

@@ -2,8 +2,8 @@ using System;
 
 namespace Lingya.Pagination.Tests {
     public class DynamicProperty {
-        string name;
-        Type type;
+        private readonly string name;
+        private readonly Type type;
 
         public DynamicProperty (string name, Type type) {
             this.name = name ??
