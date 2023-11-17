@@ -18,7 +18,7 @@ namespace Lingya.Pagination {
         /// <summary>
         /// 最小页面大小
         /// </summary>
-        private const int MinPageSize = 5;
+        private const int MinPageSize = 0;
 
         /// <summary>
         /// 默认构造方法
@@ -68,6 +68,8 @@ namespace Lingya.Pagination {
 
         /// <summary>
         /// 排序字段
+        /// - 支持多个字段，用 ',' 分割
+        /// - 支持从属属性类型 如 'Address.City'
         /// </summary>
         [DataMember(Name = "sortBy",IsRequired = false)]
         public string SortBy { get; set; }
@@ -79,7 +81,7 @@ namespace Lingya.Pagination {
         public string SearchKey { get; set; }
 
         /// <summary>
-        /// 逆序
+        /// 是否逆序排序
         /// </summary>
         [DefaultValue(false)]
         [DataMember(Name = "desc", IsRequired = false)]

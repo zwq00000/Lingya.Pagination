@@ -1,7 +1,5 @@
 using System.Linq;
-using Lingya.Pagination;
 using Lingya.Pagination.Tests.Mock;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 using Xunit.Abstractions;
 

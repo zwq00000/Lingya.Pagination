@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Lingya.Pagination.Tests.Mock {
     public class TestDbContext : DbContext {
 
-        public TestDbContext (DbContextOptions<TestDbContext> options) : base (options) {
+        public TestDbContext(DbContextOptions<TestDbContext> options) : base(options) {
 
         }
 
@@ -16,69 +16,84 @@ namespace Lingya.Pagination.Tests.Mock {
 
         public DbSet<Account> Accounts { get; set; }
 
-        public static TestDbContext UseInMemory (Action<string> logTo = null) {
-            var context = CreateDbContext (opt => {
-                opt.UseInMemoryDatabase ("Mock");
-                opt.LogTo (ToFilterLog (logTo));
+        public DbSet<Order> Orders { get; set; }
+
+        public static TestDbContext UseInMemory(Action<string> logTo = null) {
+            var context = CreateDbContext(opt => {
+                opt.UseInMemoryDatabase("Mock");
+                opt.LogTo(ToFilterLog(logTo));
             });
-            context.Seed ();
+            context.Seed();
             return context;
         }
 
-        public static TestDbContext UseSqlite (Action<string> logTo = null) {
-            var context = CreateDbContext (opt => {
-                opt.UseSqlite (CreateInMemoryDatabase ());
-                opt.LogTo (ToFilterLog (logTo));
+        public static TestDbContext UseSqlite(Action<string> logTo = null) {
+            var context = CreateDbContext(opt => {
+                opt.UseSqlite(CreateInMemoryDatabase());
+                opt.LogTo(ToFilterLog(logTo));
             });
-            context.Seed ();
+            context.Seed();
             return context;
         }
 
-        private static DbConnection CreateInMemoryDatabase () {
-            var connection = new SqliteConnection ("Filename=:memory:");
-            connection.Open ();
+        private static DbConnection CreateInMemoryDatabase() {
+            var connection = new SqliteConnection("Filename=:memory:");
+            connection.Open();
             return connection;
         }
 
-        private static Action<string> ToFilterLog (Action<string> logTo = null) {
+        private static Action<string> ToFilterLog(Action<string> logTo = null) {
             if (logTo == null) {
                 return Console.WriteLine;
             }
             return s => {
-                if (s.Contains ("started tracking") || s.Contains ("Microsoft.EntityFrameworkCore.ChangeTracking")) {
+                if (s.Contains("started tracking") || s.Contains("Microsoft.EntityFrameworkCore.ChangeTracking")) {
                     return;
                 }
-                logTo (s);
+                logTo(s);
             };
         }
 
-        public static TestDbContext CreateDbContext (Action<DbContextOptionsBuilder> action) {
-            var builder = new DbContextOptionsBuilder<TestDbContext> ();
-            action (builder);
-            return new TestDbContext (builder.Options);
+        public static TestDbContext CreateDbContext(Action<DbContextOptionsBuilder> action) {
+            var builder = new DbContextOptionsBuilder<TestDbContext>();
+            action(builder);
+            return new TestDbContext(builder.Options);
         }
 
-        private void Seed () {
-            Database.EnsureCreated ();
-            if (!Users.Any ()) {
-                Users.AddRange (CreateMockUsers ().ToArray ());
-                Accounts.AddRange (CreateMockAccount ().ToArray ());
-                SaveChanges ();
+        private void Seed() {
+            Database.EnsureCreated();
+            if (!Users.Any()) {
+                Users.AddRange(CreateMockUsers().ToArray());
+                Accounts.AddRange(CreateMockAccount().ToArray());
+                Orders.AddRange(CreateMockOrders().ToArray());
+                SaveChanges();
             }
         }
 
-        private static IEnumerable<User> CreateMockUsers (int count = 100) {
+        private static IEnumerable<Order> CreateMockOrders(int count = 10) {
             for (int i = 0; i < count; i++) {
-                yield return new User () { UserName = $"name_{i}", FullName = $"Full Name {i % 10}", CreatedDate = DateTime.Now.AddDays (-i) };
+                yield return new Order() {
+                    // Id = i,
+                    Address = new StreetAddress() {
+                        Street = $"Street_{i}",
+                        City = "TianJin"
+                    }
+                };
             }
         }
 
-        private static IEnumerable<Account> CreateMockAccount (int count = 100) {
-            var random = new Random ();
+        private static IEnumerable<User> CreateMockUsers(int count = 100) {
             for (int i = 0; i < count; i++) {
-                var quantity = random.Next (100);
-                var unitConst = Math.Round (random.NextDouble () * 10, 2);
-                yield return new Account () { Name = $"name_{i}", Quantity = quantity, UnitConst = unitConst, Price = quantity * unitConst };
+                yield return new User() { UserName = $"name_{i}", FullName = $"Full Name {i % 10}", CreatedDate = DateTime.Now.AddDays(-i) };
+            }
+        }
+
+        private static IEnumerable<Account> CreateMockAccount(int count = 100) {
+            var random = new Random();
+            for (int i = 0; i < count; i++) {
+                var quantity = random.Next(100);
+                var unitConst = Math.Round(random.NextDouble() * 10, 2);
+                yield return new Account() { Name = $"name_{i}", Quantity = quantity, UnitConst = unitConst, Price = quantity * unitConst };
             }
         }
     }

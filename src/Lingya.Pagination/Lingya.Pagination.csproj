@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net7.0</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <PackageId>Lingya.Pagination</PackageId>
     <Authors>zwq00000@hotmail.com</Authors>
@@ -17,28 +17,29 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReleaseNotes>
-    # Changes in 1.0.7:
-    - Use Search Method for string searchKey
-    - add WithAggregate method support PageSult with custom Aggregate data
-    ```c#
-    await context.Account.AsNoTracking()
-              .PagingBuilder (parameter)
-              .WithAggregateAsync (g => new Summary(){
-                Count = g.Count (),
-                Quantity = g.Sum (a => a.Quantity),
-                Price = g.Sum (a => a.Price)
-            });
-    ```
+      # Changes in 1.0.7:
+      - Use Search Method for string searchKey
+      - add WithAggregate method support PageSult with custom Aggregate data
+      ```c#
+      await context.Account.AsNoTracking()
+      .PagingBuilder (parameter)
+      .WithAggregateAsync (g => new Summary(){
+      Count = g.Count (),
+      Quantity = g.Sum (a => a.Quantity),
+      Price = g.Sum (a => a.Price)
+      });
+      ```
 
-    # Changes in 1.0.6:
-    - Add PagingQueryBuilder for auto process searchKey,support contains/startsWith/endsWith methods
-    ```c#
+      # Changes in 1.0.6:
+      - Add PagingQueryBuilder for auto process searchKey,support contains/startsWith/endsWith
+      methods
+      ```c#
       return await context.WeatherForecasts
-                .PagingBuilder (parameter)
-                .StartsFor (w => w.Summary)
-                .ToPagingAsync ();
-    ```
-    - support Microsoft.EntityFrameworkCore 3.1.*
+      .PagingBuilder (parameter)
+      .StartsFor (w => w.Summary)
+      .ToPagingAsync ();
+      ```
+      - support Microsoft.EntityFrameworkCore 3.1.*
 
     </PackageReleaseNotes>
   </PropertyGroup>
@@ -49,11 +50,17 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.*" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)'=='netstandard2.1'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.*" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net7.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.*" />
+  </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
